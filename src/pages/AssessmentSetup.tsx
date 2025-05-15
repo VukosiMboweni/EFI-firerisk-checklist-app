@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -10,9 +10,13 @@ import {
   Button,
   Box,
   Grid as MuiGrid,
+  CircularProgress,
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
 import { AssessmentSetup as AssessmentSetupType } from '../types/assessment';
+
+// Geocoding API endpoint (using OpenStreetMap Nominatim service)
+const GEOCODING_API_URL = 'https://nominatim.openstreetmap.org/reverse';
 
 const validationSchema = Yup.object({
   efiRepresentative: Yup.string().required('EFI Representative is required'),
@@ -25,6 +29,41 @@ const validationSchema = Yup.object({
 
 const AssessmentSetup: React.FC = () => {
   const navigate = useNavigate();
+
+  const [loadingLocation, setLoadingLocation] = useState(false);
+
+  const handleGetLocation = async () => {
+    setLoadingLocation(true);
+    try {
+      // Get current position
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          timeout: 10000,
+          enableHighAccuracy: true,
+        });
+      });
+
+      const { latitude, longitude } = position.coords;
+      
+      // Get address from coordinates using OpenStreetMap Nominatim
+      const response = await fetch(`${GEOCODING_API_URL}?format=json&lat=${latitude}&lon=${longitude}`);
+      const data = await response.json();
+
+      // If we get a valid address, use it
+      if (data.display_name) {
+        formik.setFieldValue('address', data.display_name);
+      } 
+      // If no address is found, show coordinates
+      else {
+        formik.setFieldValue('address', `Coordinates: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
+      }
+    } catch (error) {
+      console.error('Error getting location:', error);
+      alert('Failed to get location. Please try again.');
+    } finally {
+      setLoadingLocation(false);
+    }
+  };
 
   const formik = useFormik<AssessmentSetupType>({
     initialValues: {
@@ -81,18 +120,28 @@ const AssessmentSetup: React.FC = () => {
                 />
               </MuiGrid>
               <MuiGrid item xs={12}>
-                <TextField
-                  fullWidth
-                  id="address"
-                  name="address"
-                  label="Address"
-                  multiline
-                  rows={2}
-                  value={formik.values.address}
-                  onChange={formik.handleChange}
-                  error={formik.touched.address && Boolean(formik.errors.address)}
-                  helperText={formik.touched.address && formik.errors.address}
-                />
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <TextField
+                    fullWidth
+                    id="address"
+                    name="address"
+                    label="Address"
+                    multiline
+                    rows={2}
+                    value={formik.values.address}
+                    onChange={formik.handleChange}
+                    error={formik.touched.address && Boolean(formik.errors.address)}
+                    helperText={formik.touched.address && formik.errors.address}
+                  />
+                  <Button
+                    variant="outlined"
+                    onClick={handleGetLocation}
+                    disabled={loadingLocation}
+                    startIcon={loadingLocation ? <CircularProgress size={20} /> : undefined}
+                  >
+                    Get Current Location
+                  </Button>
+                </Box>
               </MuiGrid>
               <MuiGrid item xs={12} md={6}>
                 <TextField
