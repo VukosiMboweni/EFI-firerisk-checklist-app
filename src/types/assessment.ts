@@ -9,13 +9,18 @@ export interface AssessmentData {
   transformerProtection?: TransformerProtection;
   
   // Active Fire Protection
-  portableFireExtinguishers?: PortableFireExtinguisher[];
-  hydrants?: Hydrant[];
-  hoseReels?: HoseReel[];
-  autoSuppressionSystem?: AutoSuppressionSystem;
-  fireAlarmsAndDetection?: FireAlarmsAndDetection;
-  gasSuppressionSystem?: GasSuppressionSystem;
-  hvacDampers?: HvacDampers;
+  activeFireProtection?: {
+    portableFireExtinguishers: PortableFireExtinguisher[];
+    hasHydrants: boolean;
+    hydrants: Hydrant[];
+    hasHoseReels: boolean;
+    hoseReels: HoseReel[];
+    autoSuppressionSystem: AutoSuppressionSystem;
+    fireAlarmsAndDetection: FireAlarmsAndDetection;
+    gasSuppressionSystem: GasSuppressionSystem;
+    hvacDampers: HvacDampers;
+    imageReferences: ImageReference[];
+  };
   escapeRoutes?: EscapeRoutes;
   signage?: Signage;
   

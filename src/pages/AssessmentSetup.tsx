@@ -37,8 +37,12 @@ const AssessmentSetup: React.FC = () => {
     },
     validationSchema,
     onSubmit: (values) => {
-      // Store the values in localStorage for now (we'll implement proper state management later)
+      // Clear previous assessment data when starting a new assessment
+      localStorage.removeItem('assessmentData');
+      
+      // Store the setup values in localStorage
       localStorage.setItem('assessmentSetup', JSON.stringify(values));
+      
       navigate('/checklist');
     },
   });

@@ -22,7 +22,6 @@ import * as Yup from 'yup';
 import { CircuitBreaker } from '../../types/assessment';
 
 const validationSchema = Yup.object({
-  numberOfCircuitBreakers: Yup.number().min(0).required('Required'),
   circuitBreakers: Yup.array().of(
     Yup.object({
       id: Yup.number(),
@@ -38,17 +37,43 @@ const validationSchema = Yup.object({
 });
 
 const CircuitBreakerRisk: React.FC = () => {
+  const [saved, setSaved] = React.useState(false);
   const formik = useFormik({
     initialValues: {
-      numberOfCircuitBreakers: 0,
       circuitBreakers: [] as CircuitBreaker[],
     },
     validationSchema,
     onSubmit: (values) => {
-      console.log(values);
-      // TODO: Save to state management
+      try {
+        const assessmentJson = localStorage.getItem('assessmentData');
+        let assessmentData = assessmentJson ? JSON.parse(assessmentJson) : {};
+        assessmentData.circuitBreakers = values.circuitBreakers;
+        localStorage.setItem('assessmentData', JSON.stringify(assessmentData));
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      } catch (err) {
+        alert('Failed to save section.');
+      }
     },
   });
+
+  // Load any existing data when component mounts
+  React.useEffect(() => {
+    try {
+      const assessmentJson = localStorage.getItem('assessmentData');
+      if (assessmentJson) {
+        const assessmentData = JSON.parse(assessmentJson);
+        if (assessmentData.circuitBreakers) {
+          formik.setValues({
+            ...formik.values,
+            circuitBreakers: assessmentData.circuitBreakers,
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load existing data', err);
+    }
+  }, []);
 
   const handleAddCircuitBreaker = () => {
     const newCircuitBreaker: CircuitBreaker = {
@@ -75,24 +100,23 @@ const CircuitBreakerRisk: React.FC = () => {
         Circuit Breaker Risk Assessment
       </Typography>
       <form onSubmit={formik.handleSubmit}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+        <button type="submit" style={{ padding: '8px 24px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600 }}>
+          Save Section
+        </button>
+        {saved && (
+          <Typography sx={{ ml: 2, color: 'green', alignSelf: 'center' }}>
+            Section saved!
+          </Typography>
+        )}
+      </Box>
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h6">Circuit Breakers</Typography>
           </AccordionSummary>
           <AccordionDetails>
             <MuiGrid container spacing={3}>
-              <MuiGrid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  name="numberOfCircuitBreakers"
-                  label="Number of Circuit Breakers"
-                  value={formik.values.numberOfCircuitBreakers}
-                  onChange={formik.handleChange}
-                  error={formik.touched.numberOfCircuitBreakers && Boolean(formik.errors.numberOfCircuitBreakers)}
-                  helperText={formik.touched.numberOfCircuitBreakers && formik.errors.numberOfCircuitBreakers}
-                />
-              </MuiGrid>
+
               <MuiGrid item xs={12}>
                 <Button
                   startIcon={<AddIcon />}
@@ -107,6 +131,16 @@ const CircuitBreakerRisk: React.FC = () => {
               {formik.values.circuitBreakers.map((circuitBreaker, index) => (
                 <MuiGrid item xs={12} key={circuitBreaker.id}>
                   <Box sx={{ border: '1px solid #e0e0e0', p: 2, mb: 2, borderRadius: 1 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                      <button type="submit" style={{ padding: '8px 24px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600 }}>
+                        Save Section
+                      </button>
+                      {saved && (
+                        <Typography sx={{ ml: 2, color: 'green', alignSelf: 'center' }}>
+                          Section saved!
+                        </Typography>
+                      )}
+                    </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                       <Typography variant="subtitle1">Circuit Breaker {index + 1}</Typography>
                       <IconButton

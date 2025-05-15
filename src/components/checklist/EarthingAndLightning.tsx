@@ -32,6 +32,7 @@ const validationSchema = Yup.object({
 });
 
 const EarthingAndLightningComponent: React.FC = () => {
+  const [saved, setSaved] = React.useState(false);
   const formik = useFormik({
     initialValues: {
       earthingStrapsCondition: 'Good',
@@ -42,10 +43,36 @@ const EarthingAndLightningComponent: React.FC = () => {
     } as EarthingAndLightning,
     validationSchema,
     onSubmit: (values) => {
-      console.log(values);
-      // TODO: Save to state management
+      try {
+        const assessmentJson = localStorage.getItem('assessmentData');
+        let assessmentData = assessmentJson ? JSON.parse(assessmentJson) : {};
+        assessmentData.earthingAndLightning = values;
+        localStorage.setItem('assessmentData', JSON.stringify(assessmentData));
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      } catch (err) {
+        alert('Failed to save section.');
+      }
     },
   });
+
+  // Load any existing data when component mounts
+  React.useEffect(() => {
+    try {
+      const assessmentJson = localStorage.getItem('assessmentData');
+      if (assessmentJson) {
+        const assessmentData = JSON.parse(assessmentJson);
+        if (assessmentData.earthingAndLightning) {
+          formik.setValues({
+            ...formik.initialValues,
+            ...assessmentData.earthingAndLightning
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load existing data', err);
+    }
+  }, []);
 
   return (
     <Box>
@@ -53,6 +80,16 @@ const EarthingAndLightningComponent: React.FC = () => {
         Earthing and Lightning Protection Assessment
       </Typography>
       <form onSubmit={formik.handleSubmit}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+        <button type="submit" style={{ padding: '8px 24px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600 }}>
+          Save Section
+        </button>
+        {saved && (
+          <Typography sx={{ ml: 2, color: 'green', alignSelf: 'center' }}>
+            Section saved!
+          </Typography>
+        )}
+      </Box>
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h6">Earthing and Lightning Protection</Typography>

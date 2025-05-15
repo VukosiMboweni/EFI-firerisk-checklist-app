@@ -57,46 +57,44 @@ const validationSchema = Yup.object({
 const TransformerRisk: React.FC = () => {
   // State for storing images
   const [images, setImages] = useState<ImageRef[]>([]);
-
+  const [saved, setSaved] = React.useState(false);
 
   const formik = useFormik({
     initialValues: {
-      numberOfTransformers: 0,
       transformers: [] as Transformer[],
     },
     validationSchema,
     onSubmit: (values) => {
-      console.log(values);
-      // TODO: Save to state management including image references
-      
-      // Store the transformer data and associated images in localStorage
       try {
-        const currentData = localStorage.getItem('assessmentData');
-        const assessmentData = currentData ? JSON.parse(currentData) : {};
-        
-        // Update with transformer data
+        const assessmentJson = localStorage.getItem('assessmentData');
+        let assessmentData = assessmentJson ? JSON.parse(assessmentJson) : {};
         assessmentData.transformers = values.transformers;
-        
-        // Prepare images data for storage
-        const imageReferences = images.map(img => ({
-          id: img.id,
-          filename: img.file.name,
-          associatedWith: {
-            type: 'transformer',
-            id: img.transformerId
-          },
-          dataUrl: img.preview // This is a temporary solution - in production, images should be uploaded to a server
-        }));
-        
-        // Update image references
-        assessmentData.imageReferences = [...(assessmentData.imageReferences || []), ...imageReferences];
-        
         localStorage.setItem('assessmentData', JSON.stringify(assessmentData));
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
       } catch (err) {
-        console.error('Error saving assessment data:', err);
+        alert('Failed to save section.');
       }
     },
   });
+
+  // Load any existing data when component mounts
+  React.useEffect(() => {
+    try {
+      const assessmentJson = localStorage.getItem('assessmentData');
+      if (assessmentJson) {
+        const assessmentData = JSON.parse(assessmentJson);
+        if (assessmentData.transformers) {
+          formik.setValues({
+            ...formik.values,
+            transformers: assessmentData.transformers,
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load existing data', err);
+    }
+  }, []);
 
   const handleAddTransformer = () => {
     const newTransformer: Transformer = {
@@ -157,24 +155,23 @@ const TransformerRisk: React.FC = () => {
         Transformer Risk Assessment
       </Typography>
       <form onSubmit={formik.handleSubmit}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+        <button type="submit" style={{ padding: '8px 24px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600 }}>
+          Save Section
+        </button>
+        {saved && (
+          <Typography sx={{ ml: 2, color: 'green', alignSelf: 'center' }}>
+            Section saved!
+          </Typography>
+        )}
+      </Box>
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h6">Transformers</Typography>
           </AccordionSummary>
           <AccordionDetails>
             <MuiGrid container spacing={3}>
-              <MuiGrid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  name="numberOfTransformers"
-                  label="Number of Transformers"
-                  value={formik.values.numberOfTransformers}
-                  onChange={formik.handleChange}
-                  error={formik.touched.numberOfTransformers && Boolean(formik.errors.numberOfTransformers)}
-                  helperText={formik.touched.numberOfTransformers && formik.errors.numberOfTransformers}
-                />
-              </MuiGrid>
+
               <MuiGrid item xs={12}>
                 <Button
                   startIcon={<AddIcon />}
@@ -351,7 +348,6 @@ const TransformerRisk: React.FC = () => {
                           />
                         </MuiGrid>
                       )}
-// ... (rest of the code remains the same)
                       {getTransformerImages(transformer.id).length > 0 && (
                         <MuiGrid item xs={12}>
                           <Typography variant="subtitle2" gutterBottom>
@@ -409,15 +405,34 @@ const TransformerRisk: React.FC = () => {
           </AccordionDetails>
         </Accordion>
         
-        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-          <Button 
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+          <button 
             type="submit" 
-            variant="contained" 
-            color="primary"
-            sx={{ width: { xs: '100%', sm: 'auto' } }}
+            style={{ 
+              padding: '8px 24px', 
+              background: '#1976d2', 
+              color: '#fff', 
+              border: 'none', 
+              borderRadius: 4, 
+              cursor: 'pointer', 
+              fontWeight: 600 
+            }}
+            onClick={() => {
+              const existingData = localStorage.getItem('assessmentData');
+              const newData = { ...formik.values };
+              const mergedData = existingData ? { ...JSON.parse(existingData), ...newData } : newData;
+              localStorage.setItem('assessmentData', JSON.stringify(mergedData));
+              setSaved(true);
+              setTimeout(() => setSaved(false), 2000);
+            }}
           >
-            Save Transformer Data
-          </Button>
+            Save Section
+          </button>
+          {saved && (
+            <Typography sx={{ ml: 2, color: 'green', alignSelf: 'center' }}>
+              Section saved!
+            </Typography>
+          )}
         </Box>
       </form>
     </Box>
