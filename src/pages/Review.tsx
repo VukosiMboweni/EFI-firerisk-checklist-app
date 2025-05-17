@@ -323,17 +323,169 @@ const Review: React.FC = () => {
                       <Box key={extinguisher.id || index} sx={{ mb: 2, pl: 2, borderLeft: '3px solid #eee' }}>
                         <Typography variant="subtitle2" gutterBottom>Extinguisher {index + 1}</Typography>
                         <List dense>
-                          {Object.entries(extinguisher).map(([key, value]: [string, any]) => {
-                            if (key === 'id') return null;
-                            return (
-                              <ListItem key={key}>
-                                <ListItemText 
-                                  primary={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} 
-                                  secondary={typeof value === 'boolean' ? formatYesNo(value) : (value || 'Not specified')} 
-                                />
-                              </ListItem>
-                            );
-                          })}
+                          {/* Basic Information */}
+                          <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1, mt: 1 }}>Basic Information</Typography>
+                          <ListItem>
+                            <ListItemText 
+                              primary="Location" 
+                              secondary={extinguisher.location || 'Not specified'} 
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText 
+                              primary="Extinguisher Type" 
+                              secondary={extinguisher.extinguisherType === 'Other' ? `${extinguisher.extinguisherType} (${extinguisher.otherType || 'Unspecified'})` : (extinguisher.extinguisherType || 'Not specified')} 
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText 
+                              primary="Size (kg)" 
+                              secondary={extinguisher.sizeKg || 'Not specified'} 
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText 
+                              primary="Overall Condition" 
+                              secondary={extinguisher.condition || 'Not specified'} 
+                            />
+                          </ListItem>
+                          
+                          {/* Service Information */}
+                          <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1, mt: 2 }}>Service Information</Typography>
+                          <ListItem>
+                            <ListItemText 
+                              primary="Last Service Date" 
+                              secondary={extinguisher.lastServiceDate || 'Not specified'} 
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText 
+                              primary="Next Service Date" 
+                              secondary={extinguisher.nextServiceDate || 'Not specified'} 
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText 
+                              primary="SAQCC Registered Company" 
+                              secondary={extinguisher.saqccRegisteredCompany || 'Not specified'} 
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText 
+                              primary="SAQCC Certificate Number" 
+                              secondary={extinguisher.saqccCertificateNumber || 'Not specified'} 
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText 
+                              primary="Inspection Date" 
+                              secondary={extinguisher.inspectionDate || 'Not specified'} 
+                            />
+                          </ListItem>
+                          
+                          {/* Pressure and Physical Inspection */}
+                          <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1, mt: 2 }}>Pressure and Physical Inspection</Typography>
+                          <ListItem>
+                            <ListItemText 
+                              primary="Stored Pressure OK" 
+                              secondary={formatYesNo(extinguisher.storedPressureOk)} 
+                            />
+                          </ListItem>
+                          {extinguisher.pressureGaugeReading && (
+                            <ListItem>
+                              <ListItemText 
+                                primary="Pressure Gauge Reading" 
+                                secondary={extinguisher.pressureGaugeReading} 
+                              />
+                            </ListItem>
+                          )}
+                          <ListItem>
+                            <ListItemText 
+                              primary="Anti-Tamper Seal Intact" 
+                              secondary={formatYesNo(extinguisher.antiTamperSealIntact)} 
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText 
+                              primary="Safety Pin Secured" 
+                              secondary={formatYesNo(extinguisher.safetyPinSecured)} 
+                            />
+                          </ListItem>
+                          
+                          {/* Mounting and Accessibility */}
+                          <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1, mt: 2 }}>Mounting and Accessibility</Typography>
+                          <ListItem>
+                            <ListItemText 
+                              primary="Wall Mounted" 
+                              secondary={formatYesNo(extinguisher.wallMounted)} 
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText 
+                              primary="Correct Mounting Height" 
+                              secondary={formatYesNo(extinguisher.correctMountingHeight)} 
+                            />
+                          </ListItem>
+                          {extinguisher.wallMounted && extinguisher.correctMountingHeight && extinguisher.heightCm && (
+                            <ListItem>
+                              <ListItemText 
+                                primary="Mounting Height (cm)" 
+                                secondary={extinguisher.heightCm} 
+                              />
+                            </ListItem>
+                          )}
+                          <ListItem>
+                            <ListItemText 
+                              primary="Clear Access Path" 
+                              secondary={formatYesNo(extinguisher.clearAccessPath)} 
+                            />
+                          </ListItem>
+                          
+                          {/* Signage and Visibility */}
+                          <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1, mt: 2 }}>Signage and Visibility</Typography>
+                          <ListItem>
+                            <ListItemText 
+                              primary="Signage Visible" 
+                              secondary={formatYesNo(extinguisher.signageVisible)} 
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText 
+                              primary="Extinguisher Clean" 
+                              secondary={formatYesNo(extinguisher.extinguisherClean)} 
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText 
+                              primary="Operating Instructions Visible" 
+                              secondary={formatYesNo(extinguisher.operatingInstructionsVisible)} 
+                            />
+                          </ListItem>
+                          
+                          {/* Additional Details */}
+                          <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1, mt: 2 }}>Additional Details</Typography>
+                          <ListItem>
+                            <ListItemText 
+                              primary="Has Physical Damage" 
+                              secondary={formatYesNo(extinguisher.hasPhysicalDamage)} 
+                            />
+                          </ListItem>
+                          {extinguisher.hasPhysicalDamage && extinguisher.damageNotes && (
+                            <ListItem>
+                              <ListItemText 
+                                primary="Damage Notes" 
+                                secondary={extinguisher.damageNotes} 
+                              />
+                            </ListItem>
+                          )}
+                          {extinguisher.comments && (
+                            <ListItem>
+                              <ListItemText 
+                                primary="Additional Comments" 
+                                secondary={extinguisher.comments} 
+                              />
+                            </ListItem>
+                          )}
                         </List>
                         
                         {/* Display extinguisher images */}
@@ -347,6 +499,14 @@ const Review: React.FC = () => {
                         {index < assessmentData.activeFireProtection.portableFireExtinguishers.length - 1 && <Divider sx={{ my: 2 }} />}
                       </Box>
                     ))}
+                    
+                    {/* Display GENERAL Extinguisher Images */}
+                    {assessmentData.activeFireProtection.extinguisherImages && assessmentData.activeFireProtection.extinguisherImages.length > 0 && (
+                      <Box sx={{ mt: 3, pt: 2, borderTop: '1px dashed #ccc' }}>
+                        <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'medium' }}>General Extinguisher Photos</Typography>
+                        <SectionImages images={assessmentData.activeFireProtection.extinguisherImages} />
+                      </Box>
+                    )}
                   </>
                 ) : (
                   <Typography variant="body2">No fire extinguisher data available.</Typography>
