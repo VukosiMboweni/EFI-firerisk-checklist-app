@@ -38,7 +38,6 @@ import CircuitBreakerRisk from '../components/checklist/CircuitBreakerRisk';
 import CableRisk from '../components/checklist/CableRisk';
 import EarthingAndLightning from '../components/checklist/EarthingAndLightning';
 import ArcProtection from '../components/checklist/ArcProtection';
-import VoiceRecorder from '../components/VoiceRecorder';
 
 const drawerWidth = 240;
 
@@ -226,9 +225,7 @@ const Checklist: React.FC = () => {
             <ListItemText primary="Review & Submit" />
           </ListItemButton>
         </List>
-        <Box sx={{ p: 2 }}>
-          <VoiceRecorder section={activeSection} />
-        </Box>
+
       </Drawer>
       <Main open={open && !isMobile}>
         <DrawerHeader />
