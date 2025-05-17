@@ -157,8 +157,7 @@ const Review: React.FC = () => {
                 <Typography variant="body1" gutterBottom>{setupData.substationName}</Typography>
               </Grid>
               <Grid item xs={12} md={6}>
-                <Typography variant="subtitle1">Address</Typography>
-                <Typography variant="body1" gutterBottom>{setupData.address}</Typography>
+
               </Grid>
               <Grid item xs={12} md={6}>
                 <Typography variant="subtitle1">Region</Typography>

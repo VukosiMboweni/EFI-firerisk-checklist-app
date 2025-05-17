@@ -45,7 +45,7 @@ export interface AssessmentData {
 export interface AssessmentSetup {
   efiRepresentative: string;
   substationName: string;
-  address: string;
+
   region: string;
   cotRepresentative?: string;
   assessmentDate: string;
