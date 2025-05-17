@@ -755,28 +755,80 @@ const Review: React.FC = () => {
               <Typography variant="h5" sx={{ fontWeight: 600 }}>2.4 Circuit Breaker Risk</Typography>
             </AccordionSummary>
             <AccordionDetails>
-              {assessmentData?.circuitBreakers && assessmentData.circuitBreakers.length > 0 ? (
+              {assessmentData?.circuitBreakerRisk?.circuitBreakers && assessmentData.circuitBreakerRisk.circuitBreakers.length > 0 ? (
                 <>
                   <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Circuit Breaker Assessment</Typography>
-                  {assessmentData.circuitBreakers.map((breaker: any, index: number) => (
-                    <Box key={index} sx={{ mb: 2 }}>
-                      <Typography variant="subtitle1" gutterBottom>Circuit Breaker {index + 1}</Typography>
-                      <List dense>
-                        {Object.entries(breaker).map(([key, value]: [string, any]) => {
-                          if (key === 'id') return null;
-                          return (
-                            <ListItem key={key}>
-                              <ListItemText 
-                                primary={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} 
-                                secondary={typeof value === 'boolean' ? formatYesNo(value) : value.toString()} 
+                  {assessmentData.circuitBreakerRisk.circuitBreakers.map((breaker: any, index: number) => {
+                    // Check if we have any images for this circuit breaker
+                    const breakerImages = 
+                      assessmentData.circuitBreakerRisk.circuitBreakerImages && 
+                      Array.isArray(assessmentData.circuitBreakerRisk.circuitBreakerImages) 
+                        ? assessmentData.circuitBreakerRisk.circuitBreakerImages.filter((img: any) => 
+                            img.associatedWith && 
+                            img.associatedWith.type === 'circuitBreaker' && 
+                            img.associatedWith.id === breaker.id.toString()
+                          ) 
+                        : [];
+                    return (
+                      <Box key={breaker.id || index} sx={{ mb: 2 }}>
+                        <Typography variant="subtitle1" gutterBottom>Circuit Breaker {index + 1}</Typography>
+                        <List dense>
+                          {Object.entries(breaker).map(([key, value]: [string, any]) => {
+                            // Skip id and any array/object fields
+                            if (key === 'id' || key === 'images' || typeof value === 'object') return null;
+                            return (
+                              <ListItem key={key}>
+                                <ListItemText 
+                                  primary={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} 
+                                  secondary={value.toString()} 
+                                />
+                              </ListItem>
+                            );
+                          })}
+                        </List>
+                        {/* Display circuit breaker images */}
+                        {breakerImages && breakerImages.length > 0 && (
+                          <Box sx={{ mt: 2, mb: 2 }}>
+                            <Typography variant="subtitle2">Circuit Breaker Images:</Typography>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                              {breakerImages.map((img: any, imgIdx: number) => (
+                                <Box key={img.id || imgIdx} sx={{ width: 120, height: 120, position: 'relative' }}>
+                                  <img 
+                                    src={img.dataUrl} 
+                                    alt={`Circuit Breaker ${index + 1} image ${imgIdx + 1}`} 
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                  />
+                                </Box>
+                              ))}
+                            </Box>
+                          </Box>
+                        )}
+                        {index < assessmentData.circuitBreakerRisk.circuitBreakers.length - 1 && <Divider sx={{ my: 2 }} />}
+                      </Box>
+                    );
+                  })}
+                  
+                  {/* Display general circuit breaker images */}
+                  {assessmentData.circuitBreakerRisk.circuitBreakerImages && 
+                   assessmentData.circuitBreakerRisk.circuitBreakerImages.filter((img: any) => 
+                     img.associatedWith && img.associatedWith.id === 'general').length > 0 && (
+                    <Box sx={{ mt: 4, mb: 2 }}>
+                      <Typography variant="subtitle1">General Circuit Breaker Images:</Typography>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                        {assessmentData.circuitBreakerRisk.circuitBreakerImages
+                          .filter((img: any) => img.associatedWith && img.associatedWith.id === 'general')
+                          .map((img: any, imgIdx: number) => (
+                            <Box key={img.id || imgIdx} sx={{ width: 120, height: 120, position: 'relative' }}>
+                              <img 
+                                src={img.dataUrl} 
+                                alt={`General circuit breaker image ${imgIdx + 1}`} 
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                               />
-                            </ListItem>
-                          );
-                        })}
-                      </List>
-                      {index < assessmentData.circuitBreakers.length - 1 && <Divider sx={{ my: 2 }} />}
+                            </Box>
+                          ))}
+                      </Box>
                     </Box>
-                  ))}
+                  )}
                 </>
               ) : (
                 <Typography variant="body1">No circuit breaker data available. Please complete this section.</Typography>
@@ -790,28 +842,80 @@ const Review: React.FC = () => {
               <Typography variant="h5" sx={{ fontWeight: 600 }}>2.5 Cable Risk</Typography>
             </AccordionSummary>
             <AccordionDetails>
-              {assessmentData?.cables && assessmentData.cables.length > 0 ? (
+              {assessmentData?.cableRisk?.cables && assessmentData.cableRisk.cables.length > 0 ? (
                 <>
                   <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Cable Assessment</Typography>
-                  {assessmentData.cables.map((cable: any, index: number) => (
-                    <Box key={index} sx={{ mb: 2 }}>
-                      <Typography variant="subtitle1" gutterBottom>Cable {index + 1}</Typography>
-                      <List dense>
-                        {Object.entries(cable).map(([key, value]: [string, any]) => {
-                          if (key === 'id') return null;
-                          return (
-                            <ListItem key={key}>
-                              <ListItemText 
-                                primary={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} 
-                                secondary={typeof value === 'boolean' ? formatYesNo(value) : value.toString()} 
+                  {assessmentData.cableRisk.cables.map((cable: any, index: number) => {
+                    // Check if we have any images for this cable
+                    const cableImages = 
+                      assessmentData.cableRisk.cableImages && 
+                      Array.isArray(assessmentData.cableRisk.cableImages) 
+                        ? assessmentData.cableRisk.cableImages.filter((img: any) => 
+                            img.associatedWith && 
+                            img.associatedWith.type === 'cable' && 
+                            img.associatedWith.id === cable.id.toString()
+                          ) 
+                        : [];
+                    return (
+                      <Box key={cable.id || index} sx={{ mb: 2 }}>
+                        <Typography variant="subtitle1" gutterBottom>Cable {index + 1}</Typography>
+                        <List dense>
+                          {Object.entries(cable).map(([key, value]: [string, any]) => {
+                            // Skip id and any array/object fields
+                            if (key === 'id' || key === 'images' || typeof value === 'object') return null;
+                            return (
+                              <ListItem key={key}>
+                                <ListItemText 
+                                  primary={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} 
+                                  secondary={typeof value === 'boolean' ? formatYesNo(value) : value.toString()} 
+                                />
+                              </ListItem>
+                            );
+                          })}
+                        </List>
+                        {/* Display cable images */}
+                        {cableImages && cableImages.length > 0 && (
+                          <Box sx={{ mt: 2, mb: 2 }}>
+                            <Typography variant="subtitle2">Cable Images:</Typography>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                              {cableImages.map((img: any, imgIdx: number) => (
+                                <Box key={img.id || imgIdx} sx={{ width: 120, height: 120, position: 'relative' }}>
+                                  <img 
+                                    src={img.dataUrl} 
+                                    alt={`Cable ${index + 1} image ${imgIdx + 1}`} 
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                  />
+                                </Box>
+                              ))}
+                            </Box>
+                          </Box>
+                        )}
+                        {index < assessmentData.cableRisk.cables.length - 1 && <Divider sx={{ my: 2 }} />}
+                      </Box>
+                    );
+                  })}
+                  
+                  {/* Display general cable images */}
+                  {assessmentData.cableRisk.cableImages && 
+                   assessmentData.cableRisk.cableImages.filter((img: any) => 
+                     img.associatedWith && img.associatedWith.id === 'general').length > 0 && (
+                    <Box sx={{ mt: 4, mb: 2 }}>
+                      <Typography variant="subtitle1">General Cable Images:</Typography>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                        {assessmentData.cableRisk.cableImages
+                          .filter((img: any) => img.associatedWith && img.associatedWith.id === 'general')
+                          .map((img: any, imgIdx: number) => (
+                            <Box key={img.id || imgIdx} sx={{ width: 120, height: 120, position: 'relative' }}>
+                              <img 
+                                src={img.dataUrl} 
+                                alt={`General cable image ${imgIdx + 1}`} 
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                               />
-                            </ListItem>
-                          );
-                        })}
-                      </List>
-                      {index < assessmentData.cables.length - 1 && <Divider sx={{ my: 2 }} />}
+                            </Box>
+                          ))}
+                      </Box>
                     </Box>
-                  ))}
+                  )}
                 </>
               ) : (
                 <Typography variant="body1">No cable data available. Please complete this section.</Typography>
@@ -838,7 +942,7 @@ const Review: React.FC = () => {
                     <ListItem>
                       <ListItemText 
                         primary="Last Earth Test Date" 
-                        secondary={data.lastEarthTestDate || 'Not specified'} 
+                        secondary={data.lastEarthTestDate} 
                       />
                     </ListItem>
                     <ListItem>
@@ -853,16 +957,31 @@ const Review: React.FC = () => {
                         secondary={data.lightningMastsCondition} 
                       />
                     </ListItem>
-                    
-                    {data.comments && (
-                      <ListItem>
-                        <ListItemText 
-                          primary="Comments" 
-                          secondary={data.comments} 
-                        />
-                      </ListItem>
-                    )}
+                    <ListItem>
+                      <ListItemText 
+                        primary="Comments" 
+                        secondary={data.comments} 
+                      />
+                    </ListItem>
                   </List>
+                  
+                  {/* Display earthing and lightning images */}
+                  {data.images && data.images.length > 0 && (
+                    <Box sx={{ mt: 2, mb: 2 }}>
+                      <Typography variant="subtitle1">Earthing & Lightning Images:</Typography>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                        {data.images.map((img: any, imgIdx: number) => (
+                          <Box key={img.id || imgIdx} sx={{ width: 120, height: 120, position: 'relative' }}>
+                            <img 
+                              src={img.dataUrl} 
+                              alt={`Earthing & Lightning image ${imgIdx + 1}`} 
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
+                          </Box>
+                        ))}
+                      </Box>
+                    </Box>
+                  )}
                 </>
               ))}
             </AccordionDetails>
@@ -909,6 +1028,24 @@ const Review: React.FC = () => {
                       </ListItem>
                     )}
                   </List>
+                  
+                  {/* Display arc protection images */}
+                  {data.images && data.images.length > 0 && (
+                    <Box sx={{ mt: 2, mb: 2 }}>
+                      <Typography variant="subtitle1">Arc Protection Images:</Typography>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                        {data.images.map((img: any, imgIdx: number) => (
+                          <Box key={img.id || imgIdx} sx={{ width: 120, height: 120, position: 'relative' }}>
+                            <img 
+                              src={img.dataUrl} 
+                              alt={`Arc Protection image ${imgIdx + 1}`} 
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
+                          </Box>
+                        ))}
+                      </Box>
+                    </Box>
+                  )}
                 </>
               ))}
             </AccordionDetails>

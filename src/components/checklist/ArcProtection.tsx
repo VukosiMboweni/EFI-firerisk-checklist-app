@@ -13,11 +13,13 @@ import {
   AccordionDetails,
   FormControlLabel,
   Switch,
+  Button,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { ArcProtection } from '../../types/assessment';
+import ImageCapture, { CapturedImage } from '../common/ImageCapture';
 
 const validationSchema = Yup.object({
   systemPresent: Yup.boolean().required('Required'),
@@ -32,6 +34,7 @@ const validationSchema = Yup.object({
     otherwise: (schema) => schema,
   }),
   comments: Yup.string(),
+  images: Yup.array(),
 });
 
 const ArcProtectionComponent: React.FC = () => {
@@ -42,6 +45,7 @@ const ArcProtectionComponent: React.FC = () => {
       type: '',
       operationalStatus: 'Untested',
       comments: '',
+      images: [] as CapturedImage[],
     } as ArcProtection,
     validationSchema,
     onSubmit: (values) => {
@@ -58,6 +62,25 @@ const ArcProtectionComponent: React.FC = () => {
     },
   });
 
+  // Handle image capture from the ImageCapture component
+  const handleImageCapture = (newImage: CapturedImage) => {
+    // Make sure the associatedWith property is present
+    if (!newImage.associatedWith) {
+      newImage.associatedWith = {
+        type: 'arcProtection',
+        id: 'general'
+      };
+    }
+    const updatedImages = [...(formik.values.images || []), newImage];
+    formik.setFieldValue('images', updatedImages);
+  };
+
+  // Handle image deletion
+  const handleImageDelete = (imageId: string) => {
+    const updatedImages = (formik.values.images || []).filter(img => img.id !== imageId);
+    formik.setFieldValue('images', updatedImages);
+  };
+
   // Load any existing data when component mounts
   React.useEffect(() => {
     try {
@@ -65,14 +88,19 @@ const ArcProtectionComponent: React.FC = () => {
       if (assessmentJson) {
         const assessmentData = JSON.parse(assessmentJson);
         if (assessmentData.arcProtection) {
+          const data = assessmentData.arcProtection;
           formik.setValues({
-            ...formik.initialValues,
-            ...assessmentData.arcProtection
+            systemPresent: data.systemPresent || false,
+            type: data.type || '',
+            operationalStatus: data.operationalStatus || 'Untested',
+            comments: data.comments || '',
+            images: data.images || [],
           });
         }
       }
     } catch (err) {
       console.error('Failed to load existing data', err);
+      formik.resetForm();
     }
   }, []);
 
@@ -151,11 +179,29 @@ const ArcProtectionComponent: React.FC = () => {
                   helperText={formik.touched.comments && formik.errors.comments}
                 />
               </MuiGrid>
-              <MuiGrid item xs={12}>
+              
+              {/* Image capture for arc protection */}
+              <MuiGrid item xs={12} sx={{ mt: 2 }}>
+                <Typography variant="subtitle1" gutterBottom>Arc Protection Images</Typography>
+                <ImageCapture
+                  sectionType="arcProtection"
+                  sectionId="general"
+                  onImageCapture={handleImageCapture}
+                  onImageDelete={handleImageDelete}
+                  existingImages={formik.values.images || []}
+                />
+              </MuiGrid>
+              
+              <MuiGrid item xs={12} sx={{ mt: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <button type="submit" style={{ padding: '8px 24px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600 }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    type="submit"
+                    disabled={formik.isSubmitting}
+                  >
                     Save Section
-                  </button>
+                  </Button>
                   {saved && (
                     <Typography sx={{ ml: 2, color: 'green', alignSelf: 'center' }}>
                       Section saved!

@@ -11,11 +11,13 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Button,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { EarthingAndLightning } from '../../types/assessment';
+import ImageCapture, { CapturedImage } from '../common/ImageCapture';
 
 const validationSchema = Yup.object({
   earthingStrapsCondition: Yup.string()
@@ -29,6 +31,7 @@ const validationSchema = Yup.object({
     .oneOf(['Good', 'Damaged', 'Corroded'])
     .required('Lightning masts condition is required'),
   comments: Yup.string(),
+  images: Yup.array(),
 });
 
 const EarthingAndLightningComponent: React.FC = () => {
@@ -40,6 +43,7 @@ const EarthingAndLightningComponent: React.FC = () => {
       earthResistance: 0,
       lightningMastsCondition: 'Good',
       comments: '',
+      images: [] as CapturedImage[],
     } as EarthingAndLightning,
     validationSchema,
     onSubmit: (values) => {
@@ -56,6 +60,25 @@ const EarthingAndLightningComponent: React.FC = () => {
     },
   });
 
+  // Handle image capture from the ImageCapture component
+  const handleImageCapture = (newImage: CapturedImage) => {
+    // Make sure the associatedWith property is present
+    if (!newImage.associatedWith) {
+      newImage.associatedWith = {
+        type: 'earthingAndLightning',
+        id: 'general'
+      };
+    }
+    const updatedImages = [...(formik.values.images || []), newImage];
+    formik.setFieldValue('images', updatedImages);
+  };
+
+  // Handle image deletion
+  const handleImageDelete = (imageId: string) => {
+    const updatedImages = (formik.values.images || []).filter(img => img.id !== imageId);
+    formik.setFieldValue('images', updatedImages);
+  };
+
   // Load any existing data when component mounts
   React.useEffect(() => {
     try {
@@ -63,14 +86,20 @@ const EarthingAndLightningComponent: React.FC = () => {
       if (assessmentJson) {
         const assessmentData = JSON.parse(assessmentJson);
         if (assessmentData.earthingAndLightning) {
+          const data = assessmentData.earthingAndLightning;
           formik.setValues({
-            ...formik.initialValues,
-            ...assessmentData.earthingAndLightning
+            earthingStrapsCondition: data.earthingStrapsCondition || 'Good',
+            lastEarthTestDate: data.lastEarthTestDate || '',
+            earthResistance: data.earthResistance || 0,
+            lightningMastsCondition: data.lightningMastsCondition || 'Good',
+            comments: data.comments || '',
+            images: data.images || [],
           });
         }
       }
     } catch (err) {
       console.error('Failed to load existing data', err);
+      formik.resetForm();
     }
   }, []);
 
@@ -182,6 +211,34 @@ const EarthingAndLightningComponent: React.FC = () => {
                   error={formik.touched.comments && Boolean(formik.errors.comments)}
                   helperText={formik.touched.comments && formik.errors.comments}
                 />
+              </MuiGrid>
+
+              {/* Image capture for earthing and lightning protection */}
+              <MuiGrid item xs={12} sx={{ mt: 2 }}>
+                <Typography variant="subtitle1" gutterBottom>Earthing & Lightning Protection Images</Typography>
+                <ImageCapture
+                  sectionType="earthingAndLightning"
+                  sectionId="general"
+                  onImageCapture={handleImageCapture}
+                  onImageDelete={handleImageDelete}
+                  existingImages={formik.values.images || []}
+                />
+              </MuiGrid>
+              
+              <MuiGrid item xs={12} sx={{ mt: 2 }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  type="submit"
+                  disabled={formik.isSubmitting}
+                >
+                  Save Section
+                </Button>
+                {saved && (
+                  <Typography variant="subtitle1" color="primary" sx={{ mt: 1 }}>
+                    Section Saved Successfully!
+                  </Typography>
+                )}
               </MuiGrid>
             </MuiGrid>
           </AccordionDetails>

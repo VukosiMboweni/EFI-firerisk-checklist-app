@@ -103,6 +103,13 @@ const CircuitBreakerRisk: React.FC = () => {
 
   // Handle image capture from the ImageCapture component
   const handleImageCapture = (newImage: CapturedImage) => {
+    // Make sure the associatedWith property is present
+    if (!newImage.associatedWith) {
+      newImage.associatedWith = {
+        type: 'circuitBreaker',
+        id: 'general'
+      };
+    }
     const updatedImages = [...formik.values.circuitBreakerImages, newImage];
     formik.setFieldValue('circuitBreakerImages', updatedImages);
   };
@@ -358,7 +365,14 @@ const CircuitBreakerRisk: React.FC = () => {
                         <ImageCapture
                           sectionType="circuitBreaker"
                           sectionId={circuitBreaker.id.toString()}
-                          onImageCapture={handleImageCapture}
+                          onImageCapture={(newImage) => {
+                            // Set the correct association for this specific circuit breaker
+                            newImage.associatedWith = {
+                              type: 'circuitBreaker',
+                              id: circuitBreaker.id.toString()
+                            };
+                            handleImageCapture(newImage);
+                          }}
                           onImageDelete={handleImageDelete}
                           existingImages={getCircuitBreakerImages(circuitBreaker.id)}
                         />

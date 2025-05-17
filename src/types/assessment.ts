@@ -288,6 +288,7 @@ export interface CircuitBreaker {
   nextMaintenanceDate: string;
   condition: string;
   comments: string;
+  images?: CapturedImage[];
 }
 
 export interface Cable {
@@ -299,6 +300,7 @@ export interface Cable {
   corrosionNotes: string;
   hasDamage: boolean;
   damageNotes: string;
+  images?: CapturedImage[];
 }
 
 export interface EarthingAndLightning {
@@ -307,6 +309,7 @@ export interface EarthingAndLightning {
   earthResistance: number;
   lightningMastsCondition: 'Good' | 'Damaged' | 'Corroded';
   comments: string;
+  images?: CapturedImage[];
 }
 
 export interface ArcProtection {
@@ -314,6 +317,7 @@ export interface ArcProtection {
   type: string;
   operationalStatus: 'OK' | 'Fault' | 'Untested';
   comments: string;
+  images?: CapturedImage[];
 }
 
 export interface ImageReference {
