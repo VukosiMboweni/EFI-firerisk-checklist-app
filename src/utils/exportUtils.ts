@@ -9,7 +9,7 @@ export const generatePDF = async (element: HTMLElement, filename: string): Promi
     filename: filename,
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as 'portrait' },
   };
 
   return new Promise((resolve, reject) => {
@@ -89,6 +89,13 @@ export const createAssessmentZip = async (
 const extractImages = (obj: any, images: Array<any>) => {
   if (!obj) return;
   
+  // Special case for imageReferences array at the top level
+  if (obj.imageReferences && Array.isArray(obj.imageReferences)) {
+    obj.imageReferences.forEach((img: any) => {
+      if (img.dataUrl) images.push(img);
+    });
+  }
+  
   // If it's an array, process each item
   if (Array.isArray(obj)) {
     obj.forEach(item => extractImages(item, images));
@@ -98,14 +105,14 @@ const extractImages = (obj: any, images: Array<any>) => {
   // If it's an object, check each property
   if (typeof obj === 'object') {
     // Check if this object is an image
-    if (obj.dataUrl && (obj.id !== undefined)) {
+    if (obj.dataUrl && (obj.id !== undefined || obj.associatedWith)) {
       images.push(obj);
     }
     
     // Check all properties recursively
     for (const key in obj) {
-      // Special case for image arrays
-      if (key === 'images' && Array.isArray(obj[key])) {
+      // Special case for various image arrays
+      if ((key === 'images' || key === 'imageReferences') && Array.isArray(obj[key])) {
         obj[key].forEach((img: any) => {
           if (img.dataUrl) images.push(img);
         });
