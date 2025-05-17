@@ -1,3 +1,5 @@
+import { CapturedImage } from '../components/common/ImageCapture';
+
 export interface AssessmentData {
   imageReferences?: ImageReference[];
   // Passive Fire Protection
@@ -127,6 +129,7 @@ export interface PortableFireExtinguisher {
   antiTamperSealIntact: boolean;
   safetyPinSecured: boolean;
   wallMounted: boolean;
+  images?: CapturedImage[];
 }
 
 export interface Hydrant {
@@ -144,6 +147,7 @@ export interface Hydrant {
   hasForeignObjects: boolean;
   type: 'Wheeled' | 'Valve';
   wheelPresent: boolean;
+  images?: CapturedImage[];
 }
 
 export interface HoseReel {
@@ -171,6 +175,7 @@ export interface HoseReel {
   insertedThroughGuide: boolean;
   hasLeaks: boolean;
   leakNotes: string;
+  images?: CapturedImage[];
 }
 
 export interface AutoSuppressionSystem {
@@ -299,4 +304,4 @@ export interface ImageReference {
     section?: string;
   };
   dataUrl?: string; // Used for temporary storage/preview; in production, replace with URL from server
-} 
+}

@@ -15,6 +15,7 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { useFormik } from 'formik';
+import ImageCapture, { CapturedImage } from '../common/ImageCapture';
 
 // Helper types
 interface RadioOption {
@@ -32,15 +33,20 @@ interface RadioSelectionProps {
 interface PassiveFireProtectionValues {
   buildingCondition: string;
   fireRating: number;
+  buildingImages: CapturedImage[];
   fireDoorsPresent: string;
   fireDoorsCondition: string;
   fireWallsPresent: string;
   fireWallsCondition: string;
+  fireDoorsWallsImages: CapturedImage[];
   fireStopsPresent: string;
   fireStopsCondition: string;
+  fireStopsImages: CapturedImage[];
   transformerBundingPresent: string;
   transformerBundingCondition: string;
+  transformerImages: CapturedImage[];
   comments: string;
+  additionalImages: CapturedImage[];
 }
 
 const PassiveFireProtection: React.FC = () => {
@@ -50,15 +56,20 @@ const PassiveFireProtection: React.FC = () => {
   const initialValues: PassiveFireProtectionValues = {
     buildingCondition: 'Good',
     fireRating: 60,
+    buildingImages: [],
     fireDoorsPresent: 'Yes',
     fireDoorsCondition: 'Good',
     fireWallsPresent: 'Yes',
     fireWallsCondition: 'Good',
+    fireDoorsWallsImages: [],
     fireStopsPresent: 'Yes',
     fireStopsCondition: 'Good',
+    fireStopsImages: [],
     transformerBundingPresent: 'Yes',
     transformerBundingCondition: 'Good',
+    transformerImages: [],
     comments: '',
+    additionalImages: [],
   };
 
   const formik = useFormik<PassiveFireProtectionValues>({
@@ -199,6 +210,25 @@ const PassiveFireProtection: React.FC = () => {
                 />
               </MuiGrid>
             </MuiGrid>
+            <MuiGrid container spacing={3}>
+              <MuiGrid item xs={12}>
+                <ImageCapture
+                  sectionType="buildingStructure"
+                  sectionId="main"
+                  existingImages={formik.values.buildingImages}
+                  onImageCapture={(newImage) => {
+                    const updatedImages = [...formik.values.buildingImages, newImage];
+                    formik.setFieldValue('buildingImages', updatedImages);
+                  }}
+                  onImageDelete={(imageId) => {
+                    const updatedImages = formik.values.buildingImages.filter(
+                      (img) => img.id !== imageId
+                    );
+                    formik.setFieldValue('buildingImages', updatedImages);
+                  }}
+                />
+              </MuiGrid>
+            </MuiGrid>
           </AccordionDetails>
         </Accordion>
         
@@ -244,6 +274,25 @@ const PassiveFireProtection: React.FC = () => {
                 />
               </MuiGrid>
             </MuiGrid>
+            <MuiGrid container spacing={3}>
+              <MuiGrid item xs={12}>
+                <ImageCapture
+                  sectionType="fireDoorsWalls"
+                  sectionId="main"
+                  existingImages={formik.values.fireDoorsWallsImages}
+                  onImageCapture={(newImage) => {
+                    const updatedImages = [...formik.values.fireDoorsWallsImages, newImage];
+                    formik.setFieldValue('fireDoorsWallsImages', updatedImages);
+                  }}
+                  onImageDelete={(imageId) => {
+                    const updatedImages = formik.values.fireDoorsWallsImages.filter(
+                      (img) => img.id !== imageId
+                    );
+                    formik.setFieldValue('fireDoorsWallsImages', updatedImages);
+                  }}
+                />
+              </MuiGrid>
+            </MuiGrid>
           </AccordionDetails>
         </Accordion>
         
@@ -268,6 +317,25 @@ const PassiveFireProtection: React.FC = () => {
                   name="fireStopsCondition"
                   options={conditionOptions}
                   helpText="Rate the condition of the fire stops"
+                />
+              </MuiGrid>
+            </MuiGrid>
+            <MuiGrid container spacing={3}>
+              <MuiGrid item xs={12}>
+                <ImageCapture
+                  sectionType="fireStops"
+                  sectionId="main"
+                  existingImages={formik.values.fireStopsImages}
+                  onImageCapture={(newImage) => {
+                    const updatedImages = [...formik.values.fireStopsImages, newImage];
+                    formik.setFieldValue('fireStopsImages', updatedImages);
+                  }}
+                  onImageDelete={(imageId) => {
+                    const updatedImages = formik.values.fireStopsImages.filter(
+                      (img) => img.id !== imageId
+                    );
+                    formik.setFieldValue('fireStopsImages', updatedImages);
+                  }}
                 />
               </MuiGrid>
             </MuiGrid>
@@ -298,6 +366,25 @@ const PassiveFireProtection: React.FC = () => {
                 />
               </MuiGrid>
             </MuiGrid>
+            <MuiGrid container spacing={3}>
+              <MuiGrid item xs={12}>
+                <ImageCapture
+                  sectionType="transformerProtection"
+                  sectionId="main"
+                  existingImages={formik.values.transformerImages}
+                  onImageCapture={(newImage) => {
+                    const updatedImages = [...formik.values.transformerImages, newImage];
+                    formik.setFieldValue('transformerImages', updatedImages);
+                  }}
+                  onImageDelete={(imageId) => {
+                    const updatedImages = formik.values.transformerImages.filter(
+                      (img) => img.id !== imageId
+                    );
+                    formik.setFieldValue('transformerImages', updatedImages);
+                  }}
+                />
+              </MuiGrid>
+            </MuiGrid>
           </AccordionDetails>
         </Accordion>
         
@@ -316,6 +403,27 @@ const PassiveFireProtection: React.FC = () => {
               value={formik.values.comments}
               onChange={formik.handleChange}
             />
+            
+            {/* Additional Images for Comments */}
+            <MuiGrid container spacing={3}>
+              <MuiGrid item xs={12}>
+                <ImageCapture
+                  sectionType="additionalComments"
+                  sectionId="main"
+                  existingImages={formik.values.additionalImages}
+                  onImageCapture={(newImage) => {
+                    const updatedImages = [...formik.values.additionalImages, newImage];
+                    formik.setFieldValue('additionalImages', updatedImages);
+                  }}
+                  onImageDelete={(imageId) => {
+                    const updatedImages = formik.values.additionalImages.filter(
+                      (img) => img.id !== imageId
+                    );
+                    formik.setFieldValue('additionalImages', updatedImages);
+                  }}
+                />
+              </MuiGrid>
+            </MuiGrid>
           </AccordionDetails>
         </Accordion>
       </form>

@@ -337,10 +337,38 @@ const Review: React.FC = () => {
                         </List>
                         
                         {/* Display extinguisher images */}
-                        {extinguisher.images && extinguisher.images.length > 0 && (
-                          <Box sx={{ mt: 2 }}>
-                            <Typography variant="subtitle2" sx={{ mb: 1 }}>Extinguisher Photos:</Typography>
-                            <SectionImages images={extinguisher.images} />
+                        {assessmentData?.imageReferences && (
+                          <Box sx={{ mt: 1, mb: 3 }}>
+                            {(() => {
+                              const extinguisherImages = assessmentData.imageReferences.filter((img: any) => 
+                                img.associatedWith && 
+                                img.associatedWith.type === 'fireExtinguisher' && 
+                                img.associatedWith.id === extinguisher.id
+                              );
+                              
+                              return extinguisherImages.length > 0 ? (
+                                <>
+                                  <Typography variant="subtitle2">Extinguisher Images:</Typography>
+                                  <Grid container spacing={1} sx={{ mt: 1 }}>
+                                    {extinguisherImages.map((img: any, imgIdx: number) => (
+                                      <Grid item xs={6} sm={4} md={3} key={imgIdx}>
+                                        <img 
+                                          src={img.dataUrl} 
+                                          alt={`Extinguisher ${index + 1} image ${imgIdx + 1}`} 
+                                          style={{
+                                            width: '100%',
+                                            height: '120px',
+                                            objectFit: 'cover',
+                                            borderRadius: '4px',
+                                            border: '1px solid #ccc'
+                                          }}
+                                        />
+                                      </Grid>
+                                    ))}
+                                  </Grid>
+                                </>
+                              ) : null;
+                            })()} 
                           </Box>
                         )}
                         
@@ -372,7 +400,7 @@ const Review: React.FC = () => {
                             <Typography variant="subtitle2" gutterBottom>Hydrant {index + 1}</Typography>
                             <List dense>
                               {Object.entries(hydrant).map(([subKey, value]: [string, any]) => {
-                                if (subKey === 'id' || subKey === 'images') return null;
+                                if (subKey === 'id') return null;
                                 return (
                                   <ListItem key={`${key}-${subKey}-${index}`}>
                                     <ListItemText 
@@ -385,21 +413,42 @@ const Review: React.FC = () => {
                             </List>
 
                             {/* Display hydrant images */}
-                            {hydrant.images && hydrant.images.length > 0 && (
-                              <Box sx={{ mt: 2 }}>
-                                <Typography variant="subtitle2" sx={{ mb: 1 }}>Hydrant Photos:</Typography>
-                                <SectionImages images={hydrant.images} />
+                            {assessmentData?.imageReferences && (
+                              <Box sx={{ mt: 1, mb: 3 }}>
+                                {(() => {
+                                  const hydrantImages = assessmentData.imageReferences.filter((img: any) => 
+                                    img.associatedWith && 
+                                    img.associatedWith.type === 'hydrant' && 
+                                    img.associatedWith.id === hydrant.id
+                                  );
+                                  
+                                  return hydrantImages.length > 0 ? (
+                                    <>
+                                      <Typography variant="subtitle2">Hydrant Images:</Typography>
+                                      <Grid container spacing={1} sx={{ mt: 1 }}>
+                                        {hydrantImages.map((img: any, imgIdx: number) => (
+                                          <Grid item xs={6} sm={4} md={3} key={imgIdx}>
+                                            <img 
+                                              src={img.dataUrl} 
+                                              alt={`Hydrant ${index + 1} image ${imgIdx + 1}`} 
+                                              style={{
+                                                width: '100%',
+                                                height: '120px',
+                                                objectFit: 'cover',
+                                                borderRadius: '4px',
+                                                border: '1px solid #ccc'
+                                              }}
+                                            />
+                                          </Grid>
+                                        ))}
+                                      </Grid>
+                                    </>
+                                  ) : null;
+                                })()} 
                               </Box>
                             )}
                           </Box>
                         ))}
-                        {/* Display GENERAL Hydrant Images */}
-                        {sectionData.hydrantImages && sectionData.hydrantImages.length > 0 && (
-                          <Box sx={{ mt: 3, pt: 2, borderTop: '1px dashed #ccc' }}>
-                            <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'medium' }}>General Hydrant Photos</Typography>
-                            <SectionImages images={sectionData.hydrantImages} />
-                          </Box>
-                        )}
                       </React.Fragment>
                     );
                   }
@@ -419,7 +468,7 @@ const Review: React.FC = () => {
                             <Typography variant="subtitle2" gutterBottom>Hose Reel {index + 1}</Typography>
                             <List dense>
                               {Object.entries(hoseReel).map(([subKey, value]: [string, any]) => {
-                                if (subKey === 'id' || subKey === 'images') return null; 
+                                if (subKey === 'id') return null;
                                 return (
                                   <ListItem key={`${key}-${subKey}-${index}`}>
                                     <ListItemText 
@@ -432,24 +481,42 @@ const Review: React.FC = () => {
                             </List>
 
                             {/* Display hose reel images */}
-                            {hoseReel.images && hoseReel.images.length > 0 && (
-                              <Box sx={{ mt: 2 }}>
-                                <Typography variant="subtitle2" sx={{ mb: 1 }}>Hose Reel Photos:</Typography>
-                                <SectionImages images={hoseReel.images} />
+                            {assessmentData?.imageReferences && (
+                              <Box sx={{ mt: 1, mb: 3 }}>
+                                {(() => {
+                                  const hoseReelImages = assessmentData.imageReferences.filter((img: any) => 
+                                    img.associatedWith && 
+                                    img.associatedWith.type === 'hoseReel' && 
+                                    img.associatedWith.id === hoseReel.id
+                                  );
+                                  
+                                  return hoseReelImages.length > 0 ? (
+                                    <>
+                                      <Typography variant="subtitle2">Hose Reel Images:</Typography>
+                                      <Grid container spacing={1} sx={{ mt: 1 }}>
+                                        {hoseReelImages.map((img: any, imgIdx: number) => (
+                                          <Grid item xs={6} sm={4} md={3} key={imgIdx}>
+                                            <img 
+                                              src={img.dataUrl} 
+                                              alt={`Hose Reel ${index + 1} image ${imgIdx + 1}`} 
+                                              style={{
+                                                width: '100%',
+                                                height: '120px',
+                                                objectFit: 'cover',
+                                                borderRadius: '4px',
+                                                border: '1px solid #ccc'
+                                              }}
+                                            />
+                                          </Grid>
+                                        ))}
+                                      </Grid>
+                                    </>
+                                  ) : null;
+                                })()} 
                               </Box>
                             )}
                           </Box>
                         ))}
-                        {(!sectionData.hoseReels || sectionData.hoseReels.length === 0) && sectionData.hasHoseReels && (
-                            <Typography variant="body2" sx={{mt:1, mb:1, fontStyle: 'italic'}}>No individual hose reel units specified.</Typography>
-                        )}
-                        {/* Display GENERAL Hose Reel Images */}
-                        {sectionData.hoseReelImages && sectionData.hoseReelImages.length > 0 && (
-                          <Box sx={{ mt: 3, pt: 2, borderTop: '1px dashed #ccc' }}>
-                            <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'medium' }}>General Hose Reel Photos</Typography>
-                            <SectionImages images={sectionData.hoseReelImages} />
-                          </Box>
-                        )}
                       </React.Fragment>
                     );
                   }
@@ -465,33 +532,15 @@ const Review: React.FC = () => {
 
                   const title = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
                   
-                  // Determine the correct image array key based on the section key
-                  let imagesToDisplay: CapturedImage[] | undefined;
-                  let imageTitle = '';
-
-                  if (key === 'fireAlarmsAndDetection') {
-                    imagesToDisplay = sectionData.fireAlarmImages;
-                    imageTitle = 'Fire Alarm & Detection Photos:';
-                  } else if (key === 'autoSuppressionSystem') {
-                    imagesToDisplay = sectionData.autoSuppressionImages;
-                    imageTitle = 'Auto Suppression System Photos:';
-                  } else if (key === 'gasSuppressionSystem') {
-                    imagesToDisplay = sectionData.gasSuppressionImages;
-                    imageTitle = 'Gas Suppression System Photos:';
-                  } else if (key === 'hvacDampers') {
-                    imagesToDisplay = sectionData.hvacImages;
-                    imageTitle = 'HVAC Dampers Photos:';
-                  }
-
                   return (
                     <React.Fragment key={key}>
                       <Divider sx={{ my: 2 }} />
                       <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>{title}</Typography>
                       <List dense>
                         {Object.entries(data).map(([subKey, value]: [string, any]) => {
+                          // Skip rendering 'hasSystem', 'hasHydrants', etc. flags as they are handled above
                           if (['hasSystem', 'hasHydrants', 'hasHoseReels', 'hasDampers'].includes(subKey)) return null;
-                          if (typeof value === 'object' && value !== null && !Array.isArray(value)) return null; 
-                          if (subKey.toLowerCase().endsWith('images') && Array.isArray(value)) return null; 
+                          if (typeof value === 'object' && value !== null) return null; // Avoid rendering nested objects directly for now
                           return (
                             <ListItem key={`${key}-${subKey}`}>
                               <ListItemText 
@@ -502,13 +551,6 @@ const Review: React.FC = () => {
                           );
                         })}
                       </List>
-                      
-                      {imagesToDisplay && imagesToDisplay.length > 0 && (
-                        <Box sx={{ mt: 2 }}>
-                          <Typography variant="subtitle2" sx={{ mb: 1 }}>{imageTitle}</Typography>
-                          <SectionImages images={imagesToDisplay} />
-                        </Box>
-                      )}
                     </React.Fragment>
                   );
                 })}

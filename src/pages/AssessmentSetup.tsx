@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
 import { AssessmentSetup as AssessmentSetupType } from '../types/assessment';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 
 // Geocoding API endpoint (using OpenStreetMap Nominatim service)
 const GEOCODING_API_URL = 'https://nominatim.openstreetmap.org/reverse';
@@ -31,39 +32,7 @@ const AssessmentSetup: React.FC = () => {
   const navigate = useNavigate();
 
   const [loadingLocation, setLoadingLocation] = useState(false);
-
-  const handleGetLocation = async () => {
-    setLoadingLocation(true);
-    try {
-      // Get current position
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          timeout: 10000,
-          enableHighAccuracy: true,
-        });
-      });
-
-      const { latitude, longitude } = position.coords;
-      
-      // Get address from coordinates using OpenStreetMap Nominatim
-      const response = await fetch(`${GEOCODING_API_URL}?format=json&lat=${latitude}&lon=${longitude}`);
-      const data = await response.json();
-
-      // If we get a valid address, use it
-      if (data.display_name) {
-        formik.setFieldValue('address', data.display_name);
-      } 
-      // If no address is found, show coordinates
-      else {
-        formik.setFieldValue('address', `Coordinates: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
-      }
-    } catch (error) {
-      console.error('Error getting location:', error);
-      alert('Failed to get location. Please try again.');
-    } finally {
-      setLoadingLocation(false);
-    }
-  };
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   const formik = useFormik<AssessmentSetupType>({
     initialValues: {
@@ -82,9 +51,54 @@ const AssessmentSetup: React.FC = () => {
       // Store the setup values in localStorage
       localStorage.setItem('assessmentSetup', JSON.stringify(values));
       
+      // Navigate to the checklist page
       navigate('/checklist');
     },
   });
+  
+  const handleGetLocation = async () => {
+    setLoadingLocation(true);
+    setLocationError(null);
+
+    try {
+      // Get current position
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          timeout: 10000,
+          enableHighAccuracy: true,
+        });
+      });
+
+      const { latitude, longitude } = position.coords;
+
+      // Format the coordinates as a string
+      const formattedCoords = `Coordinates: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+      
+      try {
+        // Simple fetch to get address from coordinates
+        const response = await fetch(`${GEOCODING_API_URL}?format=json&lat=${latitude}&lon=${longitude}`);
+        const data = await response.json();
+
+        // If we get a valid address, use it
+        if (data && data.display_name) {
+          formik.setFieldValue('address', data.display_name);
+        } else {
+          // Otherwise just use the coordinates
+          formik.setFieldValue('address', formattedCoords);
+        }
+      } catch (error) {
+        // If the geocoding fails, just use the coordinates
+        console.warn('Geocoding failed, using coordinates instead');
+        formik.setFieldValue('address', formattedCoords);
+      }
+    } catch (error) {
+      console.error('Error getting location:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get location. Please try again.';
+      setLocationError(errorMessage);
+    } finally {
+      setLoadingLocation(false);
+    }
+  };
 
   return (
     <Container maxWidth="md">
@@ -130,14 +144,14 @@ const AssessmentSetup: React.FC = () => {
                     rows={2}
                     value={formik.values.address}
                     onChange={formik.handleChange}
-                    error={formik.touched.address && Boolean(formik.errors.address)}
-                    helperText={formik.touched.address && formik.errors.address}
+                    error={(formik.touched.address && Boolean(formik.errors.address)) || !!locationError}
+                    helperText={(formik.touched.address && formik.errors.address) || locationError}
                   />
                   <Button
                     variant="outlined"
                     onClick={handleGetLocation}
                     disabled={loadingLocation}
-                    startIcon={loadingLocation ? <CircularProgress size={20} /> : undefined}
+                    startIcon={loadingLocation ? <CircularProgress size={20} /> : <LocationOnIcon />}
                   >
                     Get Current Location
                   </Button>
@@ -204,4 +218,4 @@ const AssessmentSetup: React.FC = () => {
   );
 };
 
-export default AssessmentSetup; 
+export default AssessmentSetup;

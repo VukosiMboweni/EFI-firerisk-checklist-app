@@ -23,8 +23,13 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import SendIcon from '@mui/icons-material/Send';
-import { AssessmentSetup } from '../types/assessment';
+import { AssessmentData, AssessmentSetup } from '../types/assessment';
 import { CapturedImage } from '../components/common/ImageCapture';
+
+interface DisplaySection {
+  title: string;
+  content: JSX.Element;
+}
 
 const Review: React.FC = () => {
   const navigate = useNavigate();
@@ -75,6 +80,7 @@ const Review: React.FC = () => {
 
   // Render a section with data or a default message if no data exists
   const renderSection = (data: any, renderContent: (data: any) => JSX.Element): JSX.Element => {
+    console.log('Rendering section with data:', JSON.parse(JSON.stringify(data)));
     if (!data) {
       return <Typography variant="body1">No data available. Please complete this section.</Typography>;
     }
@@ -281,7 +287,7 @@ const Review: React.FC = () => {
                       />
                     </ListItem>
                   </List>
-                  
+
                   {data.transformerImages && data.transformerImages.length > 0 && (
                     <Box sx={{ mt: 2 }}>
                       <Typography variant="subtitle2" sx={{ mb: 1 }}>Photos:</Typography>
@@ -314,205 +320,184 @@ const Review: React.FC = () => {
               <Typography variant="h5" sx={{ fontWeight: 600 }}>2.2 Active Fire Protection</Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <>
-                {/* Fire Extinguishers */}
-                <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Fire Extinguishers</Typography>
-                {assessmentData?.activeFireProtection?.portableFireExtinguishers && assessmentData.activeFireProtection.portableFireExtinguishers.length > 0 ? (
-                  <>
-                    {assessmentData.activeFireProtection.portableFireExtinguishers.map((extinguisher: any, index: number) => (
-                      <Box key={extinguisher.id || index} sx={{ mb: 2, pl: 2, borderLeft: '3px solid #eee' }}>
-                        <Typography variant="subtitle2" gutterBottom>Extinguisher {index + 1}</Typography>
-                        <List dense>
-                          {Object.entries(extinguisher).map(([key, value]: [string, any]) => {
-                            if (key === 'id') return null;
-                            return (
-                              <ListItem key={key}>
-                                <ListItemText 
-                                  primary={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} 
-                                  secondary={typeof value === 'boolean' ? formatYesNo(value) : (value || 'Not specified')} 
-                                />
-                              </ListItem>
-                            );
-                          })}
-                        </List>
-                        
-                        {/* Display extinguisher images */}
-                        {extinguisher.images && extinguisher.images.length > 0 && (
-                          <Box sx={{ mt: 2 }}>
-                            <Typography variant="subtitle2" sx={{ mb: 1 }}>Extinguisher Photos:</Typography>
-                            <SectionImages images={extinguisher.images} />
-                          </Box>
-                        )}
-                        
-                        {index < assessmentData.activeFireProtection.portableFireExtinguishers.length - 1 && <Divider sx={{ my: 2 }} />}
-                      </Box>
+              {renderSection(assessmentData?.activeFireProtection, (data) => (
+                <>
+                  <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Portable Fire Extinguishers</Typography>
+                  {console.log('Fire extinguishers data:', JSON.parse(JSON.stringify(data.portableFireExtinguishers || [])))}
+                  <List dense>
+                    {data.portableFireExtinguishers?.map((ext: any, index: number) => {
+                      console.log(`Rendering extinguisher #${index + 1}:`, JSON.parse(JSON.stringify(ext)));
+                      return (
+                        <React.Fragment key={ext.id}>
+                        <Typography variant="subtitle1" sx={{ mt: 2 }}>
+                          Fire Extinguisher #{index + 1}
+                        </Typography>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Type" 
+                            secondary={ext.type} 
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Service Date" 
+                            secondary={ext.serviceDate || 'Not specified'} 
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="SAQCC Registered Company" 
+                            secondary={ext.saqccRegisteredCompany || 'Not specified'} 
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Stored Pressure OK" 
+                            secondary={formatYesNo(ext.storedPressureOk)} 
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Anti-Tamper Seal Intact" 
+                            secondary={formatYesNo(ext.antiTamperSealIntact)} 
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Safety Pin Secured" 
+                            secondary={formatYesNo(ext.safetyPinSecured)} 
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Wall Mounted" 
+                            secondary={formatYesNo(ext.wallMounted)} 
+                          />
+                        </ListItem>
+                        <Divider sx={{ my: 2 }} />
+                      </React.Fragment>
                     ))}
-                  </>
-                ) : (
-                  <Typography variant="body2">No fire extinguisher data available.</Typography>
-                )}
-                
-                {/* Other Fire Protection Systems - generic handling */}
-                {['hydrants', 'hoseReels', 'fireAlarmsAndDetection', 'autoSuppressionSystem', 'gasSuppressionSystem', 'hvacDampers'].map((key) => {
-                  const sectionData = assessmentData?.activeFireProtection; // Get the whole activeFireProtection object
-                  if (!sectionData) return null;
+                  </List>
 
-                  // Handle Hydrants (array)
-                  if (key === 'hydrants') {
-                    if (sectionData.hasHydrants === false) return <Typography key={key} variant="body2" sx={{mt:1, mb:1}}>Hydrants: Not Present</Typography>;
-                    if (!sectionData.hydrants || sectionData.hydrants.length === 0) {
-                      return <Typography key={key} variant="body2" sx={{mt:1, mb:1}}>Hydrants: No units specified.</Typography>;
-                    }
-                    return (
-                      <React.Fragment key={key}>
+                  <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Hydrants</Typography>
+                  <List dense>
+                    {data.hydrants?.map((hydrant: any, index: number) => (
+                      <React.Fragment key={hydrant.id}>
+                        <Typography variant="subtitle1" sx={{ mt: 2 }}>
+                          Hydrant #{index + 1}
+                        </Typography>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Type" 
+                            secondary={hydrant.type} 
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Location" 
+                            secondary={hydrant.location} 
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Last Service Date" 
+                            secondary={hydrant.lastServiceDate || 'Not specified'} 
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Condition" 
+                            secondary={hydrant.condition} 
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Comments" 
+                            secondary={hydrant.comments || 'None'} 
+                          />
+                        </ListItem>
                         <Divider sx={{ my: 2 }} />
-                        <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Hydrants</Typography>
-                        {sectionData.hydrants.map((hydrant: any, index: number) => (
-                          <Box key={hydrant.id || index} sx={{ mb: 2, pl: 2, borderLeft: '3px solid #eee' }}>
-                            <Typography variant="subtitle2" gutterBottom>Hydrant {index + 1}</Typography>
-                            <List dense>
-                              {Object.entries(hydrant).map(([subKey, value]: [string, any]) => {
-                                if (subKey === 'id' || subKey === 'images') return null;
-                                return (
-                                  <ListItem key={`${key}-${subKey}-${index}`}>
-                                    <ListItemText 
-                                      primary={subKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} 
-                                      secondary={typeof value === 'boolean' ? formatYesNo(value) : (value || 'Not specified')} 
-                                    />
-                                  </ListItem>
-                                );
-                              })}
-                            </List>
-
-                            {/* Display hydrant images */}
-                            {hydrant.images && hydrant.images.length > 0 && (
-                              <Box sx={{ mt: 2 }}>
-                                <Typography variant="subtitle2" sx={{ mb: 1 }}>Hydrant Photos:</Typography>
-                                <SectionImages images={hydrant.images} />
-                              </Box>
-                            )}
-                          </Box>
-                        ))}
-                        {/* Display GENERAL Hydrant Images */}
-                        {sectionData.hydrantImages && sectionData.hydrantImages.length > 0 && (
-                          <Box sx={{ mt: 3, pt: 2, borderTop: '1px dashed #ccc' }}>
-                            <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'medium' }}>General Hydrant Photos</Typography>
-                            <SectionImages images={sectionData.hydrantImages} />
-                          </Box>
-                        )}
                       </React.Fragment>
-                    );
-                  }
+                    ))}
+                  </List>
 
-                  // Handle Hose Reels (array)
-                  if (key === 'hoseReels') {
-                    if (sectionData.hasHoseReels === false) return <Typography key={key} variant="body2" sx={{mt:1, mb:1}}>Hose Reels: Not Present</Typography>;
-                    if (!sectionData.hoseReels || sectionData.hoseReels.length === 0) {
-                      return <Typography key={key} variant="body2" sx={{mt:1, mb:1}}>Hose Reels: No units specified.</Typography>;
-                    }
-                    return (
-                      <React.Fragment key={key}>
+                  <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Hose Reels</Typography>
+                  <List dense>
+                    {data.hoseReels?.map((hose: any, index: number) => (
+                      <React.Fragment key={hose.id}>
+                        <Typography variant="subtitle1" sx={{ mt: 2 }}>
+                          Hose Reel #{index + 1}
+                        </Typography>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Type" 
+                            secondary={hose.type} 
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Location" 
+                            secondary={hose.location} 
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Last Service Date" 
+                            secondary={hose.lastServiceDate || 'Not specified'} 
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Nozzle Condition" 
+                            secondary={hose.nozzleCondition} 
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Hose Condition" 
+                            secondary={hose.hoseCondition} 
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText 
+                            primary="Comments" 
+                            secondary={hose.comments || 'None'} 
+                          />
+                        </ListItem>
                         <Divider sx={{ my: 2 }} />
-                        <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Hose Reels</Typography>
-                        {sectionData.hoseReels.map((hoseReel: any, index: number) => (
-                          <Box key={hoseReel.id || index} sx={{ mb: 2, pl: 2, borderLeft: '3px solid #eee' }}>
-                            <Typography variant="subtitle2" gutterBottom>Hose Reel {index + 1}</Typography>
-                            <List dense>
-                              {Object.entries(hoseReel).map(([subKey, value]: [string, any]) => {
-                                if (subKey === 'id' || subKey === 'images') return null; 
-                                return (
-                                  <ListItem key={`${key}-${subKey}-${index}`}>
-                                    <ListItemText 
-                                      primary={subKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} 
-                                      secondary={typeof value === 'boolean' ? formatYesNo(value) : (value || 'Not specified')} 
-                                    />
-                                  </ListItem>
-                                );
-                              })}
-                            </List>
-
-                            {/* Display hose reel images */}
-                            {hoseReel.images && hoseReel.images.length > 0 && (
-                              <Box sx={{ mt: 2 }}>
-                                <Typography variant="subtitle2" sx={{ mb: 1 }}>Hose Reel Photos:</Typography>
-                                <SectionImages images={hoseReel.images} />
-                              </Box>
-                            )}
-                          </Box>
-                        ))}
-                        {(!sectionData.hoseReels || sectionData.hoseReels.length === 0) && sectionData.hasHoseReels && (
-                            <Typography variant="body2" sx={{mt:1, mb:1, fontStyle: 'italic'}}>No individual hose reel units specified.</Typography>
-                        )}
-                        {/* Display GENERAL Hose Reel Images */}
-                        {sectionData.hoseReelImages && sectionData.hoseReelImages.length > 0 && (
-                          <Box sx={{ mt: 3, pt: 2, borderTop: '1px dashed #ccc' }}>
-                            <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'medium' }}>General Hose Reel Photos</Typography>
-                            <SectionImages images={sectionData.hoseReelImages} />
-                          </Box>
-                        )}
                       </React.Fragment>
-                    );
-                  }
-                  
-                  // Original generic handling for other systems (fireAlarms, autoSuppression, etc.)
-                  const data = sectionData?.[key]; 
-                  if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) return null; 
-                  
-                  if (key === 'autoSuppressionSystem' && data.hasSystem === false) return <Typography key={key} variant="body2" sx={{mt:1, mb:1}}>Auto Suppression System: Not Present</Typography>;
-                  if (key === 'fireAlarmsAndDetection' && data.hasSystem === false) return <Typography key={key} variant="body2" sx={{mt:1, mb:1}}>Fire Alarms and Detection: Not Present</Typography>;
-                  if (key === 'gasSuppressionSystem' && data.hasSystem === false) return <Typography key={key} variant="body2" sx={{mt:1, mb:1}}>Gas Suppression System: Not Present</Typography>;
-                  if (key === 'hvacDampers' && data.hasDampers === false) return <Typography key={key} variant="body2" sx={{mt:1, mb:1}}>HVAC Dampers: Not Present</Typography>;
+                    ))}
+                  </List>
 
-                  const title = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-                  
-                  // Determine the correct image array key based on the section key
-                  let imagesToDisplay: CapturedImage[] | undefined;
-                  let imageTitle = '';
-
-                  if (key === 'fireAlarmsAndDetection') {
-                    imagesToDisplay = sectionData.fireAlarmImages;
-                    imageTitle = 'Fire Alarm & Detection Photos:';
-                  } else if (key === 'autoSuppressionSystem') {
-                    imagesToDisplay = sectionData.autoSuppressionImages;
-                    imageTitle = 'Auto Suppression System Photos:';
-                  } else if (key === 'gasSuppressionSystem') {
-                    imagesToDisplay = sectionData.gasSuppressionImages;
-                    imageTitle = 'Gas Suppression System Photos:';
-                  } else if (key === 'hvacDampers') {
-                    imagesToDisplay = sectionData.hvacImages;
-                    imageTitle = 'HVAC Dampers Photos:';
-                  }
-
-                  return (
-                    <React.Fragment key={key}>
-                      <Divider sx={{ my: 2 }} />
-                      <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>{title}</Typography>
-                      <List dense>
-                        {Object.entries(data).map(([subKey, value]: [string, any]) => {
-                          if (['hasSystem', 'hasHydrants', 'hasHoseReels', 'hasDampers'].includes(subKey)) return null;
-                          if (typeof value === 'object' && value !== null && !Array.isArray(value)) return null; 
-                          if (subKey.toLowerCase().endsWith('images') && Array.isArray(value)) return null; 
-                          return (
-                            <ListItem key={`${key}-${subKey}`}>
-                              <ListItemText 
-                                primary={subKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} 
-                                secondary={typeof value === 'boolean' ? formatYesNo(value) : (value || 'Not specified')} 
-                              />
-                            </ListItem>
-                          );
-                        })}
-                      </List>
-                      
-                      {imagesToDisplay && imagesToDisplay.length > 0 && (
-                        <Box sx={{ mt: 2 }}>
-                          <Typography variant="subtitle2" sx={{ mb: 1 }}>{imageTitle}</Typography>
-                          <SectionImages images={imagesToDisplay} />
-                        </Box>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </>
+                  <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Other Systems</Typography>
+                  <List dense>
+                    <ListItem>
+                      <ListItemText 
+                        primary="Auto Suppression System" 
+                        secondary={data.autoSuppressionSystem?.type || 'Not specified'} 
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemText 
+                        primary="Fire Alarms and Detection" 
+                        secondary={data.fireAlarmsAndDetection?.type || 'Not specified'} 
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemText 
+                        primary="Gas Suppression System" 
+                        secondary={data.gasSuppressionSystem?.type || 'Not specified'} 
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemText 
+                        primary="HVAC Dampers" 
+                        secondary={data.hvacDampers?.type || 'Not specified'} 
+                      />
+                    </ListItem>
+                  </List>
+                </>
+              ))}
             </AccordionDetails>
           </Accordion>
 
@@ -522,70 +507,21 @@ const Review: React.FC = () => {
               <Typography variant="h5" sx={{ fontWeight: 600 }}>2.3 Transformer Risk</Typography>
             </AccordionSummary>
             <AccordionDetails>
-              {assessmentData?.transformerRisk?.transformers && assessmentData.transformerRisk.transformers.length > 0 ? (
+              {renderSection(assessmentData?.transformerRisk, (data) => (
                 <>
                   <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Transformer Assessment</Typography>
-                  {assessmentData.transformerRisk.transformers.map((transformer: any, index: number) => {
-                    // Check if we have any images for this transformer
-                    const transformerImages = 
-                      assessmentData.transformerRisk.transformerImages && 
-                      Array.isArray(assessmentData.transformerRisk.transformerImages) 
-                        ? assessmentData.transformerRisk.transformerImages.filter((img: any) => 
-                            img.associatedWith && 
-                            img.associatedWith.type === 'transformer' && 
-                            img.associatedWith.id === transformer.id.toString()
-                          )
-                        : [];
-                    
-                    return (
-                      <Box key={transformer.id || index} sx={{ mb: 2 }}>
-                        <Typography variant="subtitle1" gutterBottom>Transformer {index + 1}</Typography>
-                        <List dense>
-                          {Object.entries(transformer).map(([key, value]: [string, any]) => {
-                            if (key === 'id') return null;
-                            return (
-                              <ListItem key={key}>
-                                <ListItemText 
-                                  primary={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} 
-                                  secondary={typeof value === 'boolean' ? formatYesNo(value) : value.toString()} 
-                                />
-                              </ListItem>
-                            );
-                          })}
-                        </List>
-                        
-                        {/* Display transformer images */}
-                        {transformerImages && transformerImages.length > 0 && (
-                          <Box sx={{ mt: 1, mb: 3 }}>
-                            <Typography variant="subtitle2">Transformer Images:</Typography>
-                            <Grid container spacing={1} sx={{ mt: 1 }}>
-                              {transformerImages.map((img: any, imgIdx: number) => (
-                                <Grid item xs={6} sm={4} md={3} key={imgIdx}>
-                                  <img 
-                                    src={img.dataUrl} 
-                                    alt={`Transformer ${index + 1} image ${imgIdx + 1}`} 
-                                    style={{
-                                      width: '100%',
-                                      height: '120px',
-                                      objectFit: 'cover',
-                                      borderRadius: '4px',
-                                      border: '1px solid #ccc'
-                                    }}
-                                  />
-                                </Grid>
-                              ))}
-                            </Grid>
-                          </Box>
-                        )}
-                        
-                        {index < assessmentData.transformerRisk.transformers.length - 1 && <Divider sx={{ my: 2 }} />}
-                      </Box>
-                    );
-                  })}
+                  <List dense>
+                    {Object.entries(data).map(([key, value]: [string, any]) => (
+                      <ListItem key={key}>
+                        <ListItemText 
+                          primary={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} 
+                          secondary={typeof value === 'boolean' ? formatYesNo(value) : value} 
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
                 </>
-              ) : (
-                <Typography variant="body1">No transformer data available. Please complete this section.</Typography>
-              )}
+              ))}
             </AccordionDetails>
           </Accordion>
 
@@ -595,32 +531,21 @@ const Review: React.FC = () => {
               <Typography variant="h5" sx={{ fontWeight: 600 }}>2.4 Circuit Breaker Risk</Typography>
             </AccordionSummary>
             <AccordionDetails>
-              {assessmentData?.circuitBreakers && assessmentData.circuitBreakers.length > 0 ? (
+              {renderSection(assessmentData?.circuitBreakerRisk, (data) => (
                 <>
                   <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Circuit Breaker Assessment</Typography>
-                  {assessmentData.circuitBreakers.map((breaker: any, index: number) => (
-                    <Box key={index} sx={{ mb: 2 }}>
-                      <Typography variant="subtitle1" gutterBottom>Circuit Breaker {index + 1}</Typography>
-                      <List dense>
-                        {Object.entries(breaker).map(([key, value]: [string, any]) => {
-                          if (key === 'id') return null;
-                          return (
-                            <ListItem key={key}>
-                              <ListItemText 
-                                primary={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} 
-                                secondary={typeof value === 'boolean' ? formatYesNo(value) : value.toString()} 
-                              />
-                            </ListItem>
-                          );
-                        })}
-                      </List>
-                      {index < assessmentData.circuitBreakers.length - 1 && <Divider sx={{ my: 2 }} />}
-                    </Box>
-                  ))}
+                  <List dense>
+                    {Object.entries(data).map(([key, value]: [string, any]) => (
+                      <ListItem key={key}>
+                        <ListItemText 
+                          primary={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} 
+                          secondary={typeof value === 'boolean' ? formatYesNo(value) : value} 
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
                 </>
-              ) : (
-                <Typography variant="body1">No circuit breaker data available. Please complete this section.</Typography>
-              )}
+              ))}
             </AccordionDetails>
           </Accordion>
 
@@ -630,32 +555,21 @@ const Review: React.FC = () => {
               <Typography variant="h5" sx={{ fontWeight: 600 }}>2.5 Cable Risk</Typography>
             </AccordionSummary>
             <AccordionDetails>
-              {assessmentData?.cables && assessmentData.cables.length > 0 ? (
+              {renderSection(assessmentData?.cableRisk, (data) => (
                 <>
                   <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Cable Assessment</Typography>
-                  {assessmentData.cables.map((cable: any, index: number) => (
-                    <Box key={index} sx={{ mb: 2 }}>
-                      <Typography variant="subtitle1" gutterBottom>Cable {index + 1}</Typography>
-                      <List dense>
-                        {Object.entries(cable).map(([key, value]: [string, any]) => {
-                          if (key === 'id') return null;
-                          return (
-                            <ListItem key={key}>
-                              <ListItemText 
-                                primary={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} 
-                                secondary={typeof value === 'boolean' ? formatYesNo(value) : value.toString()} 
-                              />
-                            </ListItem>
-                          );
-                        })}
-                      </List>
-                      {index < assessmentData.cables.length - 1 && <Divider sx={{ my: 2 }} />}
-                    </Box>
-                  ))}
+                  <List dense>
+                    {Object.entries(data).map(([key, value]: [string, any]) => (
+                      <ListItem key={key}>
+                        <ListItemText 
+                          primary={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} 
+                          secondary={typeof value === 'boolean' ? formatYesNo(value) : value} 
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
                 </>
-              ) : (
-                <Typography variant="body1">No cable data available. Please complete this section.</Typography>
-              )}
+              ))}
             </AccordionDetails>
           </Accordion>
 
@@ -784,6 +698,52 @@ const Review: React.FC = () => {
         </Box>
       </Box>
     </Container>
+  );
+};
+
+// For older format images (keeping for backward compatibility)
+const ItemImages: React.FC<{ associatedType: string; itemId: number }> = ({ associatedType, itemId }) => {
+  const [images, setImages] = useState<string[]>([]);
+  
+  useEffect(() => {
+    // Load images from localStorage or elsewhere
+    try {
+      const assessmentJson = localStorage.getItem('assessmentData');
+      if (assessmentJson) {
+        const assessmentData = JSON.parse(assessmentJson);
+        if (assessmentData.imageReferences) {
+          const relevantImages = assessmentData.imageReferences.filter(
+            (img: any) => img.associatedWith.type === associatedType && img.associatedWith.id === itemId
+          );
+          setImages(relevantImages.map((img: any) => img.dataUrl || ''));
+        }
+      }
+    } catch (err) {
+      console.error('Error loading images', err);
+    }
+  }, [associatedType, itemId]);
+
+  if (images.length === 0) {
+    return null;
+  }
+
+  return (
+    <Grid container spacing={1} sx={{ mt: 1 }}>
+      {images.map((img, idx) => (
+        <Grid item xs={6} sm={4} md={3} key={idx}>
+          <img 
+            src={img} 
+            alt={`${associatedType} ${itemId} image ${idx + 1}`} 
+            style={{
+              width: '100%',
+              height: '100px',
+              objectFit: 'cover',
+              borderRadius: '4px'
+            }}
+          />
+        </Grid>
+      ))}
+    </Grid>
   );
 };
 

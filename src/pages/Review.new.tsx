@@ -15,10 +15,15 @@ import {
   AccordionDetails,
   Container,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import SendIcon from '@mui/icons-material/Send';
+import { CapturedImage } from '../components/common/ImageCapture';
 import { AssessmentData, AssessmentSetup } from '../types/assessment';
 
 interface DisplaySection {
@@ -36,24 +41,35 @@ const Review: React.FC = () => {
   useEffect(() => {
     // Load assessment data from localStorage
     try {
+      console.log('Review component mounted, loading data from localStorage');
       const setupJson = localStorage.getItem('assessmentSetup');
       const assessmentJson = localStorage.getItem('assessmentData');
       
+      console.log('Setup JSON:', setupJson);
+      console.log('Assessment JSON:', assessmentJson);
+      
       if (setupJson) {
-        setSetupData(JSON.parse(setupJson));
+        const parsedSetup = JSON.parse(setupJson);
+        console.log('Parsed setup data:', parsedSetup);
+        setSetupData(parsedSetup);
       } else {
+        console.log('No setup data found');
         setError('No assessment setup data found. Please complete the setup first.');
       }
       
       if (assessmentJson) {
-        setAssessmentData(JSON.parse(assessmentJson));
+        const parsedAssessment = JSON.parse(assessmentJson);
+        console.log('Parsed assessment data:', parsedAssessment);
+        setAssessmentData(parsedAssessment);
       } else {
+        console.log('No assessment data found');
         setError('No assessment data found. Please complete the checklist first.');
       }
     } catch (err) {
+      console.error('Error during data loading:', err);
       setError('Error loading assessment data. Please try again.');
-      console.error(err);
     } finally {
+      console.log('Setting loading to false');
       setLoading(false);
     }
   }, []);
@@ -196,7 +212,14 @@ const Review: React.FC = () => {
                     </ListItem>
                   </List>
                   
-                  <Divider sx={{ my: 2 }} />
+                  {data.buildingImages && data.buildingImages.length > 0 && (
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="subtitle2" sx={{ mb: 1 }}>Building Photos:</Typography>
+                      <SectionImages images={data.buildingImages} />
+                    </Box>
+                  )}
+                  
+                  <Divider sx={{ my: 2 }}/>
                   
                   <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Fire Doors & Walls</Typography>
                   <List dense>
@@ -226,7 +249,14 @@ const Review: React.FC = () => {
                     </ListItem>
                   </List>
                   
-                  <Divider sx={{ my: 2 }} />
+                  {data.fireDoorsWallsImages && data.fireDoorsWallsImages.length > 0 && (
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="subtitle2" sx={{ mb: 1 }}>Fire Doors & Walls Photos:</Typography>
+                      <SectionImages images={data.fireDoorsWallsImages} />
+                    </Box>
+                  )}
+                  
+                  <Divider sx={{ my: 2 }}/>
                   
                   <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Fire Stops</Typography>
                   <List dense>
@@ -243,6 +273,13 @@ const Review: React.FC = () => {
                       />
                     </ListItem>
                   </List>
+                  
+                  {data.fireStopsImages && data.fireStopsImages.length > 0 && (
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="subtitle2" sx={{ mb: 1 }}>Fire Stops Photos:</Typography>
+                      <SectionImages images={data.fireStopsImages} />
+                    </Box>
+                  )}
                   
                   <Divider sx={{ my: 2 }} />
                   
@@ -261,6 +298,13 @@ const Review: React.FC = () => {
                       />
                     </ListItem>
                   </List>
+                  
+                  {data.transformerImages && data.transformerImages.length > 0 && (
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="subtitle2" sx={{ mb: 1 }}>Transformer Photos:</Typography>
+                      <SectionImages images={data.transformerImages} />
+                    </Box>
+                  )}
 
                   {data.comments && (
                     <>
@@ -289,54 +333,56 @@ const Review: React.FC = () => {
                       console.log(`Rendering extinguisher #${index + 1}:`, JSON.parse(JSON.stringify(ext)));
                       return (
                         <React.Fragment key={ext.id}>
-                        <Typography variant="subtitle1" sx={{ mt: 2 }}>
-                          Fire Extinguisher #{index + 1}
-                        </Typography>
-                        <ListItem>
-                          <ListItemText 
-                            primary="Type" 
-                            secondary={ext.type} 
-                          />
-                        </ListItem>
-                        <ListItem>
-                          <ListItemText 
-                            primary="Service Date" 
-                            secondary={ext.serviceDate || 'Not specified'} 
-                          />
-                        </ListItem>
-                        <ListItem>
-                          <ListItemText 
-                            primary="SAQCC Registered Company" 
-                            secondary={ext.saqccRegisteredCompany || 'Not specified'} 
-                          />
-                        </ListItem>
-                        <ListItem>
-                          <ListItemText 
-                            primary="Stored Pressure OK" 
-                            secondary={formatYesNo(ext.storedPressureOk)} 
-                          />
-                        </ListItem>
-                        <ListItem>
-                          <ListItemText 
-                            primary="Anti-Tamper Seal Intact" 
-                            secondary={formatYesNo(ext.antiTamperSealIntact)} 
-                          />
-                        </ListItem>
-                        <ListItem>
-                          <ListItemText 
-                            primary="Safety Pin Secured" 
-                            secondary={formatYesNo(ext.safetyPinSecured)} 
-                          />
-                        </ListItem>
-                        <ListItem>
-                          <ListItemText 
-                            primary="Wall Mounted" 
-                            secondary={formatYesNo(ext.wallMounted)} 
-                          />
-                        </ListItem>
-                        <Divider sx={{ my: 2 }} />
-                      </React.Fragment>
-                    ))}
+                          <Typography variant="subtitle1" sx={{ mt: 2 }}>
+                            Fire Extinguisher #{index + 1}
+                          </Typography>
+                          <ListItem>
+                            <ListItemText 
+                              primary="Type" 
+                              secondary={ext.type} 
+                            />
+                          </ListItem>
+                          <ItemImages associatedType="fireExtinguisher" itemId={ext.id} />
+                          <ListItem>
+                            <ListItemText 
+                              primary="Service Date" 
+                              secondary={ext.serviceDate || 'Not specified'} 
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText 
+                              primary="SAQCC Registered Company" 
+                              secondary={ext.saqccRegisteredCompany || 'Not specified'} 
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText 
+                              primary="Stored Pressure OK" 
+                              secondary={formatYesNo(ext.storedPressureOk)} 
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText 
+                              primary="Anti-Tamper Seal Intact" 
+                              secondary={formatYesNo(ext.antiTamperSealIntact)} 
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText 
+                              primary="Safety Pin Secured" 
+                              secondary={formatYesNo(ext.safetyPinSecured)} 
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText 
+                              primary="Wall Mounted" 
+                              secondary={formatYesNo(ext.wallMounted)} 
+                            />
+                          </ListItem>
+                          <Divider sx={{ my: 2 }} />
+                        </React.Fragment>
+                      );
+                    })}
                   </List>
 
                   <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Hydrants</Typography>
@@ -346,6 +392,7 @@ const Review: React.FC = () => {
                         <Typography variant="subtitle1" sx={{ mt: 2 }}>
                           Hydrant #{index + 1}
                         </Typography>
+                        <ItemImages associatedType="hydrant" itemId={hydrant.id} />
                         <ListItem>
                           <ListItemText 
                             primary="Type" 
@@ -388,6 +435,7 @@ const Review: React.FC = () => {
                         <Typography variant="subtitle1" sx={{ mt: 2 }}>
                           Hose Reel #{index + 1}
                         </Typography>
+                        <ItemImages associatedType="hoseReel" itemId={hose.id} />
                         <ListItem>
                           <ListItemText 
                             primary="Type" 
@@ -443,18 +491,36 @@ const Review: React.FC = () => {
                         secondary={data.fireAlarmsAndDetection?.type || 'Not specified'} 
                       />
                     </ListItem>
+                    {data.fireAlarmsAndDetection?.hasSystem && (
+                      <ItemImages associatedType="fireAlarm" itemId={1} />
+                    )}
+                    <ListItem>
+                      <ListItemText 
+                        primary="Auto Suppression System" 
+                        secondary={data.autoSuppressionSystem?.type || 'Not specified'} 
+                      />
+                    </ListItem>
+                    {data.autoSuppressionSystem?.hasSystem && (
+                      <ItemImages associatedType="autoSuppression" itemId={1} />
+                    )}
                     <ListItem>
                       <ListItemText 
                         primary="Gas Suppression System" 
                         secondary={data.gasSuppressionSystem?.type || 'Not specified'} 
                       />
                     </ListItem>
+                    {data.gasSuppressionSystem?.hasSystem && (
+                      <ItemImages associatedType="gasSuppressionSystem" itemId={1} />
+                    )}
                     <ListItem>
                       <ListItemText 
                         primary="HVAC Dampers" 
                         secondary={data.hvacDampers?.type || 'Not specified'} 
                       />
                     </ListItem>
+                    {data.hvacDampers?.hasDampers && (
+                      <ItemImages associatedType="hvacDampers" itemId={1} />
+                    )}
                   </List>
                 </>
               ))}
@@ -471,7 +537,7 @@ const Review: React.FC = () => {
                 <>
                   <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Transformer Assessment</Typography>
                   <List dense>
-                    {Object.entries(data).map(([key, value]: [string, any]) => (
+                    {Object.entries(data).filter(([key]) => key !== 'transformerImages' && !Array.isArray(data[key])).map(([key, value]: [string, any]) => (
                       <ListItem key={key}>
                         <ListItemText 
                           primary={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} 
@@ -480,6 +546,13 @@ const Review: React.FC = () => {
                       </ListItem>
                     ))}
                   </List>
+                  
+                  {data.transformerImages && data.transformerImages.length > 0 && (
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="subtitle2" sx={{ mb: 1 }}>Transformer Risk Photos:</Typography>
+                      <SectionImages images={data.transformerImages} />
+                    </Box>
+                  )}
                 </>
               ))}
             </AccordionDetails>
@@ -495,7 +568,7 @@ const Review: React.FC = () => {
                 <>
                   <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Circuit Breaker Assessment</Typography>
                   <List dense>
-                    {Object.entries(data).map(([key, value]: [string, any]) => (
+                    {Object.entries(data).filter(([key]) => key !== 'circuitBreakerImages' && !Array.isArray(data[key])).map(([key, value]: [string, any]) => (
                       <ListItem key={key}>
                         <ListItemText 
                           primary={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} 
@@ -504,6 +577,13 @@ const Review: React.FC = () => {
                       </ListItem>
                     ))}
                   </List>
+                  
+                  {data.circuitBreakerImages && data.circuitBreakerImages.length > 0 && (
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="subtitle2" sx={{ mb: 1 }}>Circuit Breaker Photos:</Typography>
+                      <SectionImages images={data.circuitBreakerImages} />
+                    </Box>
+                  )}
                 </>
               ))}
             </AccordionDetails>
@@ -519,7 +599,7 @@ const Review: React.FC = () => {
                 <>
                   <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Cable Assessment</Typography>
                   <List dense>
-                    {Object.entries(data).map(([key, value]: [string, any]) => (
+                    {Object.entries(data).filter(([key]) => key !== 'cableImages' && !Array.isArray(data[key])).map(([key, value]: [string, any]) => (
                       <ListItem key={key}>
                         <ListItemText 
                           primary={key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} 
@@ -528,6 +608,13 @@ const Review: React.FC = () => {
                       </ListItem>
                     ))}
                   </List>
+                  
+                  {data.cableImages && data.cableImages.length > 0 && (
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="subtitle2" sx={{ mb: 1 }}>Cable Photos:</Typography>
+                      <SectionImages images={data.cableImages} />
+                    </Box>
+                  )}
                 </>
               ))}
             </AccordionDetails>
@@ -577,6 +664,13 @@ const Review: React.FC = () => {
                       </ListItem>
                     )}
                   </List>
+                  
+                  {data.earthingImages && data.earthingImages.length > 0 && (
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="subtitle2" sx={{ mb: 1 }}>Earthing & Lightning Photos:</Typography>
+                      <SectionImages images={data.earthingImages} />
+                    </Box>
+                  )}
                 </>
               ))}
             </AccordionDetails>
@@ -623,6 +717,13 @@ const Review: React.FC = () => {
                       </ListItem>
                     )}
                   </List>
+                  
+                  {data.arcProtectionImages && data.arcProtectionImages.length > 0 && (
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="subtitle2" sx={{ mb: 1 }}>Arc Protection Photos:</Typography>
+                      <SectionImages images={data.arcProtectionImages} />
+                    </Box>
+                  )}
                 </>
               ))}
             </AccordionDetails>
@@ -661,8 +762,10 @@ const Review: React.FC = () => {
   );
 };
 
+// For images associated with specific items by type and ID
 const ItemImages: React.FC<{ associatedType: string; itemId: number }> = ({ associatedType, itemId }) => {
   const [images, setImages] = useState<string[]>([]);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   
   useEffect(() => {
     // Load images from localStorage or elsewhere
@@ -686,23 +789,123 @@ const ItemImages: React.FC<{ associatedType: string; itemId: number }> = ({ asso
     return null;
   }
 
+  const handleOpenImage = (dataUrl: string) => {
+    setSelectedImage(dataUrl);
+  };
+  
+  const handleCloseImage = () => {
+    setSelectedImage(null);
+  };
+
   return (
-    <Grid container spacing={1} sx={{ mt: 1 }}>
-      {images.map((img, idx) => (
-        <Grid item xs={6} sm={4} md={3} key={idx}>
-          <img 
-            src={img} 
-            alt={`${associatedType} ${itemId} image ${idx + 1}`} 
-            style={{
-              width: '100%',
-              height: '100px',
-              objectFit: 'cover',
-              borderRadius: '4px'
-            }}
-          />
-        </Grid>
-      ))}
-    </Grid>
+    <>
+      <Grid container spacing={1} sx={{ mt: 1 }}>
+        {images.map((img, idx) => (
+          <Grid item xs={6} sm={4} md={3} key={idx}>
+            <Box 
+              component="img"
+              src={img} 
+              alt={`${associatedType} ${itemId} image ${idx + 1}`} 
+              sx={{
+                width: '100%',
+                height: '100px',
+                objectFit: 'cover',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                border: '1px solid #ccc'
+              }}
+              onClick={() => handleOpenImage(img)}
+            />
+          </Grid>
+        ))}
+      </Grid>
+      
+      {/* Image preview dialog */}
+      <Dialog open={!!selectedImage} onClose={handleCloseImage} maxWidth="md">
+        <DialogTitle>Photo Preview</DialogTitle>
+        <DialogContent>
+          {selectedImage && (
+            <Box
+              component="img"
+              src={selectedImage}
+              alt="Preview"
+              sx={{
+                width: '100%',
+                maxHeight: '70vh',
+                objectFit: 'contain',
+              }}
+            />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseImage}>Close</Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
+};
+
+// For directly passing an array of images (passive fire protection format)
+const SectionImages: React.FC<{ images: CapturedImage[] }> = ({ images }) => {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  
+  if (!images || images.length === 0) {
+    return null;
+  }
+  
+  const handleOpenImage = (dataUrl: string) => {
+    setSelectedImage(dataUrl);
+  };
+  
+  const handleCloseImage = () => {
+    setSelectedImage(null);
+  };
+  
+  return (
+    <>
+      <Grid container spacing={1}>
+        {images.map((img, idx) => (
+          <Grid item xs={6} sm={4} md={3} key={img.id || idx}>
+            <Box 
+              component="img"
+              src={img.dataUrl}
+              alt={`Image ${idx + 1}`}
+              sx={{
+                width: '100%',
+                height: '100px',
+                objectFit: 'cover',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                border: '1px solid #ccc'
+              }}
+              onClick={() => handleOpenImage(img.dataUrl)}
+            />
+          </Grid>
+        ))}
+      </Grid>
+      
+      {/* Image preview dialog */}
+      <Dialog open={!!selectedImage} onClose={handleCloseImage} maxWidth="md">
+        <DialogTitle>Photo Preview</DialogTitle>
+        <DialogContent>
+          {selectedImage && (
+            <Box
+              component="img"
+              src={selectedImage}
+              alt="Preview"
+              sx={{
+                width: '100%',
+                maxHeight: '70vh',
+                objectFit: 'contain',
+              }}
+            />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseImage}>Close</Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 
