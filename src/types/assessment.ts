@@ -122,13 +122,34 @@ export interface TransformerProtection {
 
 export interface PortableFireExtinguisher {
   id: number;
-  type: string;
-  serviceDate: string;
+  location: string;
+  extinguisherType: 'CO2' | 'Dry Chemical Powder' | 'Foam' | 'Water' | 'Wet Chemical' | 'Other';
+  otherType?: string;
+  sizeKg: number;
+  lastServiceDate: string;
+  nextServiceDate: string;
   saqccRegisteredCompany: string;
+  saqccCertificateNumber: string;
+  condition: 'Good' | 'Fair' | 'Poor' | 'Critical';
+  // Pressure and physical inspection
   storedPressureOk: boolean;
+  pressureGaugeReading?: string;
   antiTamperSealIntact: boolean;
   safetyPinSecured: boolean;
+  // Mounting and accessibility
   wallMounted: boolean;
+  correctMountingHeight: boolean;
+  heightCm?: number;
+  clearAccessPath: boolean;
+  // Signage and visibility
+  signageVisible: boolean;
+  extinguisherClean: boolean;
+  // Additional details
+  operatingInstructionsVisible: boolean;
+  hasPhysicalDamage: boolean;
+  damageNotes?: string;
+  inspectionDate: string;
+  comments?: string;
   images?: CapturedImage[];
 }
 

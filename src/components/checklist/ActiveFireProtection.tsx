@@ -11,6 +11,7 @@ import {
   AccordionDetails,
   Button,
   IconButton,
+  MenuItem,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AddIcon from '@mui/icons-material/Add';
@@ -207,13 +208,30 @@ const ActiveFireProtection: React.FC = () => {
       ...formik.values.portableFireExtinguishers,
       {
         id: Date.now(),
-        type: '',
-        serviceDate: '',
+        location: '',
+        extinguisherType: 'Dry Chemical Powder',
+        otherType: '',
+        sizeKg: 4.5,
+        lastServiceDate: '',
+        nextServiceDate: '',
         saqccRegisteredCompany: '',
+        saqccCertificateNumber: '',
+        condition: 'Good',
         storedPressureOk: true,
+        pressureGaugeReading: '',
         antiTamperSealIntact: true,
         safetyPinSecured: true,
         wallMounted: true,
+        correctMountingHeight: true,
+        heightCm: 120,
+        clearAccessPath: true,
+        signageVisible: true,
+        extinguisherClean: true,
+        operatingInstructionsVisible: true,
+        hasPhysicalDamage: false,
+        damageNotes: '',
+        inspectionDate: new Date().toISOString().split('T')[0],
+        comments: '',
         images: [], // Initialize with empty images array
       } as AssessmentPortableFireExtinguisher,
     ]);
@@ -364,6 +382,9 @@ const ActiveFireProtection: React.FC = () => {
           <AccordionDetails>
             <MuiGrid container spacing={3}>
               <MuiGrid item xs={12}>
+                <Typography variant="body1" gutterBottom>
+                  Add and assess all portable fire extinguishers in the facility. Include details about location, type, condition, and compliance.
+                </Typography>
                 <Button startIcon={<AddIcon />} onClick={handleAddFireExtinguisher} variant="outlined" color="primary">
                   Add Fire Extinguisher
                 </Button>
@@ -384,10 +405,7 @@ const ActiveFireProtection: React.FC = () => {
                 <MuiGrid item xs={12} key={extinguisher.id}>
                   <Box sx={{ border: '1px solid #e0e0e0', p: 2, mb: 2, borderRadius: 1 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                      <Typography variant="subtitle1">Fire Extinguisher {index + 1}</Typography>
-                      {/* Remove old image upload button */}
-                      {/* <input ... onChange={(e) => handleImageUpload(extinguisher.id, e)} /> ... */}
-                      {/* <label htmlFor={`extinguisher-image-upload-${extinguisher.id}`}> ... </label> ... */}
+                      <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Fire Extinguisher {index + 1}</Typography>
                       <IconButton onClick={() => handleRemoveFireExtinguisher(index)} color="error" size="small">
                         <DeleteIcon />
                       </IconButton>
@@ -395,13 +413,361 @@ const ActiveFireProtection: React.FC = () => {
                     
                     {/* Form fields for extinguisher properties */}
                     <MuiGrid container spacing={3}>
-                      {/* ... (TextFields for type, serviceDate, etc. - ensure names like `portableFireExtinguishers.${index}.type` are correct) ... */}
-                      <MuiGrid item xs={12} sm={6}>
-                        <TextField fullWidth name={`portableFireExtinguishers.${index}.type`} label="Type" value={extinguisher.type} onChange={formik.handleChange} /* ...error/helperText... */ />
+                      {/* Basic Information */}
+                      <MuiGrid item xs={12}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, borderBottom: '1px solid #e0e0e0', pb: 1 }}>
+                          Basic Information
+                        </Typography>
                       </MuiGrid>
-                      {/* ... other fields ... */}
-                       <MuiGrid item xs={12}>
-                        <Typography variant="subtitle2" sx={{ mb: 1 }}>Images for Extinguisher {index + 1}</Typography>
+                      
+                      <MuiGrid item xs={12} sm={6}>
+                        <TextField 
+                          fullWidth 
+                          name={`portableFireExtinguishers.${index}.location`} 
+                          label="Location" 
+                          value={extinguisher.location || ''} 
+                          onChange={formik.handleChange}
+                          placeholder="e.g., Main entrance, Server room"
+                        />
+                      </MuiGrid>
+                      
+                      <MuiGrid item xs={12} sm={6}>
+                        <TextField 
+                          fullWidth 
+                          select
+                          name={`portableFireExtinguishers.${index}.extinguisherType`} 
+                          label="Extinguisher Type" 
+                          value={extinguisher.extinguisherType || 'Dry Chemical Powder'} 
+                          onChange={formik.handleChange}
+                        >
+                          <MenuItem value="CO2">CO2</MenuItem>
+                          <MenuItem value="Dry Chemical Powder">Dry Chemical Powder</MenuItem>
+                          <MenuItem value="Foam">Foam</MenuItem>
+                          <MenuItem value="Water">Water</MenuItem>
+                          <MenuItem value="Wet Chemical">Wet Chemical</MenuItem>
+                          <MenuItem value="Other">Other</MenuItem>
+                        </TextField>
+                      </MuiGrid>
+                      
+                      {extinguisher.extinguisherType === 'Other' && (
+                        <MuiGrid item xs={12} sm={6}>
+                          <TextField 
+                            fullWidth 
+                            name={`portableFireExtinguishers.${index}.otherType`} 
+                            label="Specify Other Type" 
+                            value={extinguisher.otherType || ''} 
+                            onChange={formik.handleChange}
+                          />
+                        </MuiGrid>
+                      )}
+                      
+                      <MuiGrid item xs={12} sm={6}>
+                        <TextField 
+                          fullWidth 
+                          type="number"
+                          name={`portableFireExtinguishers.${index}.sizeKg`} 
+                          label="Size (kg)" 
+                          value={extinguisher.sizeKg || 4.5} 
+                          onChange={formik.handleChange}
+                          InputProps={{ inputProps: { min: 0, step: 0.5 } }}
+                        />
+                      </MuiGrid>
+                      
+                      <MuiGrid item xs={12} sm={6}>
+                        <TextField 
+                          fullWidth 
+                          select
+                          name={`portableFireExtinguishers.${index}.condition`} 
+                          label="Overall Condition" 
+                          value={extinguisher.condition || 'Good'} 
+                          onChange={formik.handleChange}
+                        >
+                          <MenuItem value="Good">Good</MenuItem>
+                          <MenuItem value="Fair">Fair</MenuItem>
+                          <MenuItem value="Poor">Poor</MenuItem>
+                          <MenuItem value="Critical">Critical</MenuItem>
+                        </TextField>
+                      </MuiGrid>
+                      
+                      {/* Service Information */}
+                      <MuiGrid item xs={12}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, mt: 2, borderBottom: '1px solid #e0e0e0', pb: 1 }}>
+                          Service Information
+                        </Typography>
+                      </MuiGrid>
+                      
+                      <MuiGrid item xs={12} sm={6}>
+                        <TextField 
+                          fullWidth 
+                          type="date"
+                          name={`portableFireExtinguishers.${index}.lastServiceDate`} 
+                          label="Last Service Date" 
+                          value={extinguisher.lastServiceDate || ''} 
+                          onChange={formik.handleChange}
+                          InputLabelProps={{ shrink: true }}
+                        />
+                      </MuiGrid>
+                      
+                      <MuiGrid item xs={12} sm={6}>
+                        <TextField 
+                          fullWidth 
+                          type="date"
+                          name={`portableFireExtinguishers.${index}.nextServiceDate`} 
+                          label="Next Service Date" 
+                          value={extinguisher.nextServiceDate || ''} 
+                          onChange={formik.handleChange}
+                          InputLabelProps={{ shrink: true }}
+                        />
+                      </MuiGrid>
+                      
+                      <MuiGrid item xs={12} sm={6}>
+                        <TextField 
+                          fullWidth 
+                          name={`portableFireExtinguishers.${index}.saqccRegisteredCompany`} 
+                          label="SAQCC Registered Company" 
+                          value={extinguisher.saqccRegisteredCompany || ''} 
+                          onChange={formik.handleChange}
+                        />
+                      </MuiGrid>
+                      
+                      <MuiGrid item xs={12} sm={6}>
+                        <TextField 
+                          fullWidth 
+                          name={`portableFireExtinguishers.${index}.saqccCertificateNumber`} 
+                          label="SAQCC Certificate Number" 
+                          value={extinguisher.saqccCertificateNumber || ''} 
+                          onChange={formik.handleChange}
+                        />
+                      </MuiGrid>
+                      
+                      <MuiGrid item xs={12} sm={6}>
+                        <TextField 
+                          fullWidth 
+                          type="date"
+                          name={`portableFireExtinguishers.${index}.inspectionDate`} 
+                          label="Inspection Date" 
+                          value={extinguisher.inspectionDate || new Date().toISOString().split('T')[0]} 
+                          onChange={formik.handleChange}
+                          InputLabelProps={{ shrink: true }}
+                        />
+                      </MuiGrid>
+                      
+                      {/* Pressure and Physical Inspection */}
+                      <MuiGrid item xs={12}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, mt: 2, borderBottom: '1px solid #e0e0e0', pb: 1 }}>
+                          Pressure and Physical Inspection
+                        </Typography>
+                      </MuiGrid>
+                      
+                      <MuiGrid item xs={12} sm={6}>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={extinguisher.storedPressureOk || false}
+                              onChange={(e) => formik.setFieldValue(`portableFireExtinguishers.${index}.storedPressureOk`, e.target.checked)}
+                              name={`portableFireExtinguishers.${index}.storedPressureOk`}
+                            />
+                          }
+                          label="Stored Pressure OK"
+                        />
+                      </MuiGrid>
+                      
+                      <MuiGrid item xs={12} sm={6}>
+                        <TextField 
+                          fullWidth 
+                          name={`portableFireExtinguishers.${index}.pressureGaugeReading`} 
+                          label="Pressure Gauge Reading" 
+                          value={extinguisher.pressureGaugeReading || ''} 
+                          onChange={formik.handleChange}
+                          placeholder="e.g., 14 bar"
+                        />
+                      </MuiGrid>
+                      
+                      <MuiGrid item xs={12} sm={6}>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={extinguisher.antiTamperSealIntact || false}
+                              onChange={(e) => formik.setFieldValue(`portableFireExtinguishers.${index}.antiTamperSealIntact`, e.target.checked)}
+                              name={`portableFireExtinguishers.${index}.antiTamperSealIntact`}
+                            />
+                          }
+                          label="Anti-Tamper Seal Intact"
+                        />
+                      </MuiGrid>
+                      
+                      <MuiGrid item xs={12} sm={6}>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={extinguisher.safetyPinSecured || false}
+                              onChange={(e) => formik.setFieldValue(`portableFireExtinguishers.${index}.safetyPinSecured`, e.target.checked)}
+                              name={`portableFireExtinguishers.${index}.safetyPinSecured`}
+                            />
+                          }
+                          label="Safety Pin Secured"
+                        />
+                      </MuiGrid>
+                      
+                      {/* Mounting and Accessibility */}
+                      <MuiGrid item xs={12}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, mt: 2, borderBottom: '1px solid #e0e0e0', pb: 1 }}>
+                          Mounting and Accessibility
+                        </Typography>
+                      </MuiGrid>
+                      
+                      <MuiGrid item xs={12} sm={6}>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={extinguisher.wallMounted || false}
+                              onChange={(e) => formik.setFieldValue(`portableFireExtinguishers.${index}.wallMounted`, e.target.checked)}
+                              name={`portableFireExtinguishers.${index}.wallMounted`}
+                            />
+                          }
+                          label="Wall Mounted"
+                        />
+                      </MuiGrid>
+                      
+                      <MuiGrid item xs={12} sm={6}>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={extinguisher.correctMountingHeight || false}
+                              onChange={(e) => formik.setFieldValue(`portableFireExtinguishers.${index}.correctMountingHeight`, e.target.checked)}
+                              name={`portableFireExtinguishers.${index}.correctMountingHeight`}
+                            />
+                          }
+                          label="Correct Mounting Height"
+                        />
+                      </MuiGrid>
+                      
+                      {extinguisher.wallMounted && extinguisher.correctMountingHeight && (
+                        <MuiGrid item xs={12} sm={6}>
+                          <TextField 
+                            fullWidth 
+                            type="number"
+                            name={`portableFireExtinguishers.${index}.heightCm`} 
+                            label="Mounting Height (cm)" 
+                            value={extinguisher.heightCm || 120} 
+                            onChange={formik.handleChange}
+                            InputProps={{ inputProps: { min: 0 } }}
+                          />
+                        </MuiGrid>
+                      )}
+                      
+                      <MuiGrid item xs={12} sm={6}>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={extinguisher.clearAccessPath || false}
+                              onChange={(e) => formik.setFieldValue(`portableFireExtinguishers.${index}.clearAccessPath`, e.target.checked)}
+                              name={`portableFireExtinguishers.${index}.clearAccessPath`}
+                            />
+                          }
+                          label="Clear Access Path"
+                        />
+                      </MuiGrid>
+                      
+                      {/* Signage and Visibility */}
+                      <MuiGrid item xs={12}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, mt: 2, borderBottom: '1px solid #e0e0e0', pb: 1 }}>
+                          Signage and Visibility
+                        </Typography>
+                      </MuiGrid>
+                      
+                      <MuiGrid item xs={12} sm={6}>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={extinguisher.signageVisible || false}
+                              onChange={(e) => formik.setFieldValue(`portableFireExtinguishers.${index}.signageVisible`, e.target.checked)}
+                              name={`portableFireExtinguishers.${index}.signageVisible`}
+                            />
+                          }
+                          label="Signage Visible"
+                        />
+                      </MuiGrid>
+                      
+                      <MuiGrid item xs={12} sm={6}>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={extinguisher.extinguisherClean || false}
+                              onChange={(e) => formik.setFieldValue(`portableFireExtinguishers.${index}.extinguisherClean`, e.target.checked)}
+                              name={`portableFireExtinguishers.${index}.extinguisherClean`}
+                            />
+                          }
+                          label="Extinguisher Clean"
+                        />
+                      </MuiGrid>
+                      
+                      <MuiGrid item xs={12} sm={6}>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={extinguisher.operatingInstructionsVisible || false}
+                              onChange={(e) => formik.setFieldValue(`portableFireExtinguishers.${index}.operatingInstructionsVisible`, e.target.checked)}
+                              name={`portableFireExtinguishers.${index}.operatingInstructionsVisible`}
+                            />
+                          }
+                          label="Operating Instructions Visible"
+                        />
+                      </MuiGrid>
+                      
+                      {/* Additional Details */}
+                      <MuiGrid item xs={12}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, mt: 2, borderBottom: '1px solid #e0e0e0', pb: 1 }}>
+                          Additional Details
+                        </Typography>
+                      </MuiGrid>
+                      
+                      <MuiGrid item xs={12} sm={6}>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={extinguisher.hasPhysicalDamage || false}
+                              onChange={(e) => formik.setFieldValue(`portableFireExtinguishers.${index}.hasPhysicalDamage`, e.target.checked)}
+                              name={`portableFireExtinguishers.${index}.hasPhysicalDamage`}
+                            />
+                          }
+                          label="Has Physical Damage"
+                        />
+                      </MuiGrid>
+                      
+                      {extinguisher.hasPhysicalDamage && (
+                        <MuiGrid item xs={12}>
+                          <TextField 
+                            fullWidth 
+                            multiline
+                            rows={2}
+                            name={`portableFireExtinguishers.${index}.damageNotes`} 
+                            label="Damage Notes" 
+                            value={extinguisher.damageNotes || ''} 
+                            onChange={formik.handleChange}
+                            placeholder="Describe the damage in detail"
+                          />
+                        </MuiGrid>
+                      )}
+                      
+                      <MuiGrid item xs={12}>
+                        <TextField 
+                          fullWidth 
+                          multiline
+                          rows={3}
+                          name={`portableFireExtinguishers.${index}.comments`} 
+                          label="Additional Comments" 
+                          value={extinguisher.comments || ''} 
+                          onChange={formik.handleChange}
+                          placeholder="Enter any additional observations or notes"
+                        />
+                      </MuiGrid>
+                      
+                      {/* Images */}
+                      <MuiGrid item xs={12}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, mt: 2, borderBottom: '1px solid #e0e0e0', pb: 1 }}>
+                          Images for Extinguisher {index + 1}
+                        </Typography>
                         <ImageCapture
                           sectionType="portableExtinguisherUnit"
                           sectionId={String(extinguisher.id)}
@@ -462,14 +828,18 @@ const ActiveFireProtection: React.FC = () => {
                             error={Boolean(formik.touched.hydrants?.[index]?.type && 
                               formik.errors.hydrants && 
                               typeof formik.errors.hydrants !== 'string' && 
-                              formik.errors.hydrants[index]?.type)}
+                              formik.errors.hydrants[index] && 
+                              typeof formik.errors.hydrants[index] !== 'string' && 
+                              (formik.errors.hydrants[index] as any)?.type)}
                             helperText={formik.touched.hydrants?.[index]?.type && 
                               formik.errors.hydrants && 
                               typeof formik.errors.hydrants !== 'string' && 
-                              formik.errors.hydrants[index]?.type}
+                              formik.errors.hydrants[index] && 
+                              typeof formik.errors.hydrants[index] !== 'string' && 
+                              (formik.errors.hydrants[index] as any)?.type}
                           >
-                            <option value="Wheeled">Wheeled</option>
-                            <option value="Valve">Valve</option>
+                            <MenuItem value="Wheeled">Wheeled</MenuItem>
+                            <MenuItem value="Valve">Valve</MenuItem>
                           </TextField>
                         </MuiGrid>
                         <MuiGrid item xs={12} sm={6}>
