@@ -1,0 +1,108 @@
+/* Print styles for Fire Risk Assessment */
+
+@media print {
+  /* Hide navigation and buttons that aren't needed in print */
+  button, 
+  .MuiButton-root,
+  .no-print {
+    display: none !important;
+  }
+  
+  /* Show all accordion content in print mode */
+  .MuiAccordion-root {
+    display: block !important;
+  }
+  
+  .MuiAccordion-root.Mui-expanded {
+    margin: 0 !important;
+  }
+  
+  .MuiAccordionSummary-root {
+    display: block !important;
+    page-break-inside: avoid;
+  }
+  
+  .MuiAccordionSummary-expandIconWrapper {
+    display: none !important;
+  }
+  
+  .MuiAccordionDetails-root {
+    display: block !important;
+    page-break-inside: avoid;
+  }
+  
+  /* Add page breaks before major sections */
+  .page-break-before {
+    page-break-before: always;
+  }
+  
+  /* Prevent page breaks inside elements */
+  .no-page-break {
+    page-break-inside: avoid;
+  }
+  
+  /* Basic page and text styling */
+  body {
+    font-size: 12pt;
+    background-color: white;
+    color: black;
+  }
+  
+  /* Improve table printing */
+  table, th, td {
+    border-collapse: collapse;
+    border: 1px solid #ddd;
+  }
+  
+  th, td {
+    padding: 8px;
+  }
+  
+  /* Images in print */
+  img {
+    max-width: 100%;
+    height: auto;
+    page-break-inside: avoid;
+  }
+  
+  /* Add some spacing to the document */
+  .print-container {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Header styling */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+    page-break-inside: avoid;
+  }
+  
+  h1 {
+    font-size: 18pt;
+  }
+  
+  h2 {
+    font-size: 16pt;
+  }
+  
+  h3 {
+    font-size: 14pt;
+  }
+  
+  /* Make links show their URL */
+  a:link, a:visited {
+    text-decoration: underline;
+    color: black;
+  }
+  
+  a[href]:after {
+    content: " (" attr(href) ")";
+    font-size: 90%;
+  }
+  
+  /* Add margins and padding */
+  @page {
+    margin: 2cm;
+  }
+}

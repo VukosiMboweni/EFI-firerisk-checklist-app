@@ -21,8 +21,7 @@ import {
   DialogActions,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import SendIcon from '@mui/icons-material/Send';
+import ExportOptions from '../components/review/ExportOptions';
 import { CapturedImage } from '../components/common/ImageCapture';
 import { AssessmentData, AssessmentSetup } from '../types/assessment';
 
@@ -78,16 +77,7 @@ const Review: React.FC = () => {
     navigate('/checklist');
   };
 
-  const handleGeneratePDF = () => {
-    // TODO: Implement PDF generation
-    alert('PDF generation will be implemented in a future update');
-  };
-
-  const handleSubmit = () => {
-    // TODO: Implement submission to backend
-    alert('Your assessment has been submitted successfully!');
-    navigate('/');
-  };
+  // The export functionality is now handled by the ExportOptions component
 
   // Render a section with data or a default message if no data exists
   const renderSection = (data: any, renderContent: (data: any) => JSX.Element): JSX.Element => {
@@ -142,7 +132,7 @@ const Review: React.FC = () => {
         <Divider sx={{ mb: 4 }} />
         
         {/* Assessment Setup */}
-        <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
+        <Paper elevation={3} sx={{ p: 3, mb: 3 }} className="no-page-break">
           <Typography variant="h4" gutterBottom sx={{ mb: 2 }}>
             1. Assessment Setup
           </Typography>
@@ -182,7 +172,7 @@ const Review: React.FC = () => {
         </Paper>
 
         {/* Assessment Results */}
-        <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
+        <Paper elevation={3} sx={{ p: 3, mb: 3 }} className="no-page-break">
           <Typography variant="h4" gutterBottom sx={{ mb: 2 }}>
             2. Assessment Results
           </Typography>
@@ -318,7 +308,7 @@ const Review: React.FC = () => {
           </Accordion>
 
           {/* Active Fire Protection */}
-          <Accordion>
+          <Accordion className="page-break-before">
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography variant="h5" sx={{ fontWeight: 600 }}>2.2 Active Fire Protection</Typography>
             </AccordionSummary>
@@ -527,7 +517,7 @@ const Review: React.FC = () => {
           </Accordion>
 
           {/* Transformer Risk */}
-          <Accordion>
+          <Accordion className="page-break-before">
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography variant="h5" sx={{ fontWeight: 600 }}>2.3 Transformer Risk</Typography>
             </AccordionSummary>
@@ -558,7 +548,7 @@ const Review: React.FC = () => {
           </Accordion>
 
           {/* Circuit Breaker Risk */}
-          <Accordion>
+          <Accordion className="page-break-before">
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography variant="h5" sx={{ fontWeight: 600 }}>2.4 Circuit Breaker Risk</Typography>
             </AccordionSummary>
@@ -589,7 +579,7 @@ const Review: React.FC = () => {
           </Accordion>
 
           {/* Cable Risk */}
-          <Accordion>
+          <Accordion className="page-break-before">
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography variant="h5" sx={{ fontWeight: 600 }}>2.5 Cable Risk</Typography>
             </AccordionSummary>
@@ -620,7 +610,7 @@ const Review: React.FC = () => {
           </Accordion>
 
           {/* Earthing and Lightning */}
-          <Accordion>
+          <Accordion className="page-break-before">
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography variant="h5" sx={{ fontWeight: 600 }}>2.6 Earthing and Lightning</Typography>
             </AccordionSummary>
@@ -676,7 +666,7 @@ const Review: React.FC = () => {
           </Accordion>
 
           {/* Arc Protection */}
-          <Accordion>
+          <Accordion className="page-break-before">
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography variant="h5" sx={{ fontWeight: 600 }}>2.7 Arc Protection</Typography>
             </AccordionSummary>
@@ -730,7 +720,7 @@ const Review: React.FC = () => {
         </Paper>
 
         {/* Action Buttons */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }} className="no-print">
           <Button
             variant="outlined"
             onClick={handleBack}
@@ -738,22 +728,10 @@ const Review: React.FC = () => {
             Back to Checklist
           </Button>
           <Box>
-            <Button
-              variant="contained"
-              startIcon={<PictureAsPdfIcon />}
-              onClick={handleGeneratePDF}
-              sx={{ mr: 2 }}
-            >
-              Generate PDF
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<SendIcon />}
-              onClick={handleSubmit}
-            >
-              Submit Assessment
-            </Button>
+            <ExportOptions 
+              assessmentData={assessmentData} 
+              setupData={setupData} 
+            />
           </Box>
         </Box>
       </Box>
