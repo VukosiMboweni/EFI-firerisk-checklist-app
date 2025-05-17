@@ -23,6 +23,8 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import SendIcon from '@mui/icons-material/Send';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { submitToCloud } from '../utils/cloudStorage';
 import { AssessmentSetup } from '../types/assessment';
 import { CapturedImage } from '../components/common/ImageCapture';
 
@@ -32,6 +34,8 @@ const Review: React.FC = () => {
   const [setupData, setSetupData] = useState<AssessmentSetup | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState<{success: boolean; message: string} | null>(null);
 
   useEffect(() => {
     // Load assessment data from localStorage
@@ -67,10 +71,53 @@ const Review: React.FC = () => {
     alert('PDF generation will be implemented in a future update');
   };
 
-  const handleSubmit = () => {
-    // TODO: Implement submission to backend
-    alert('Your assessment has been submitted successfully!');
-    navigate('/');
+  const handleSubmit = async () => {
+    if (!assessmentData || !setupData) {
+      setSubmitSuccess({
+        success: false,
+        message: 'Cannot submit: Missing assessment or setup data'
+      });
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      // Submit the assessment data and all images to cloud storage
+      const result = await submitToCloud(assessmentData, setupData, {
+        includeImages: true,
+        metadata: {
+          assessmentDate: setupData.assessmentDate,
+          substationName: setupData.substationName,
+          efiRepresentative: setupData.efiRepresentative,
+          region: setupData.region
+        }
+      });
+
+      if (result.success) {
+        setSubmitSuccess({
+          success: true,
+          message: 'Assessment data and images have been successfully uploaded to cloud storage.'
+        });
+        
+        // After 3 seconds, redirect to home
+        setTimeout(() => {
+          navigate('/');
+        }, 3000);
+      } else {
+        setSubmitSuccess({
+          success: false,
+          message: `Failed to upload: ${result.error || 'Unknown error'}`
+        });
+      }
+    } catch (error) {
+      console.error('Error during submission:', error);
+      setSubmitSuccess({
+        success: false,
+        message: `Error during submission: ${error instanceof Error ? error.message : 'Unknown error'}`
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // Render a section with data or a default message if no data exists
@@ -140,8 +187,7 @@ const Review: React.FC = () => {
                 <Typography variant="body1" gutterBottom>{setupData.substationName}</Typography>
               </Grid>
               <Grid item xs={12} md={6}>
-                <Typography variant="subtitle1">Address</Typography>
-                <Typography variant="body1" gutterBottom>{setupData.address}</Typography>
+
               </Grid>
               <Grid item xs={12} md={6}>
                 <Typography variant="subtitle1">Region</Typography>
@@ -1066,17 +1112,28 @@ const Review: React.FC = () => {
               startIcon={<PictureAsPdfIcon />}
               onClick={handleGeneratePDF}
               sx={{ mr: 2 }}
+              disabled={submitting}
             >
               Generate PDF
             </Button>
             <Button
               variant="contained"
               color="primary"
-              startIcon={<SendIcon />}
+              startIcon={submitting ? <CloudUploadIcon /> : <SendIcon />}
               onClick={handleSubmit}
+              disabled={submitting}
             >
-              Submit Assessment
+              {submitting ? 'Uploading...' : 'Submit Assessment'}
             </Button>
+            
+            {/* Submission status message */}
+            {submitSuccess && (
+              <Box sx={{ mt: 2, width: '100%' }}>
+                <Alert severity={submitSuccess.success ? 'success' : 'error'}>
+                  {submitSuccess.message}
+                </Alert>
+              </Box>
+            )}
           </Box>
         </Box>
       </Box>

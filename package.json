@@ -17,6 +17,7 @@
     "@mui/x-date-pickers": "^6.19.8",
     "@types/uuid": "^10.0.0",
     "date-fns": "^2.30.0",
+    "docx": "^9.5.0",
     "file-saver": "^2.0.5",
     "formik": "^2.4.6",
     "html2pdf.js": "^0.10.3",
