@@ -20,6 +20,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { CircuitBreaker } from '../../types/assessment';
+import ImageCapture, { CapturedImage } from '../common/ImageCapture';
 
 const validationSchema = Yup.object({
   circuitBreakers: Yup.array().of(
@@ -36,22 +37,39 @@ const validationSchema = Yup.object({
   ),
 });
 
+// Interface for the form values
+interface CircuitBreakerRiskValues {
+  circuitBreakers: CircuitBreaker[];
+  circuitBreakerImages: CapturedImage[];
+}
+
 const CircuitBreakerRisk: React.FC = () => {
   const [saved, setSaved] = React.useState(false);
-  const formik = useFormik({
-    initialValues: {
-      circuitBreakers: [] as CircuitBreaker[],
-    },
+  
+  // Define the initial values for the form
+  const initialValues: CircuitBreakerRiskValues = {
+    circuitBreakers: [],
+    circuitBreakerImages: [],
+  };
+  
+  const formik = useFormik<CircuitBreakerRiskValues>({
+    initialValues,
     validationSchema,
     onSubmit: (values) => {
+      console.log('Form submitted with values:', values);
       try {
         const assessmentJson = localStorage.getItem('assessmentData');
         let assessmentData = assessmentJson ? JSON.parse(assessmentJson) : {};
-        assessmentData.circuitBreakers = values.circuitBreakers;
+        
+        // Store all circuit breaker risk data under a single key
+        assessmentData.circuitBreakerRisk = values;
+        
         localStorage.setItem('assessmentData', JSON.stringify(assessmentData));
+        console.log('Data saved to localStorage:', assessmentData.circuitBreakerRisk);
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
       } catch (err) {
+        console.error('Failed to save section:', err);
         alert('Failed to save section.');
       }
     },
@@ -63,7 +81,15 @@ const CircuitBreakerRisk: React.FC = () => {
       const assessmentJson = localStorage.getItem('assessmentData');
       if (assessmentJson) {
         const assessmentData = JSON.parse(assessmentJson);
-        if (assessmentData.circuitBreakers) {
+        
+        // Check for new data structure
+        if (assessmentData.circuitBreakerRisk) {
+          console.log('Loading existing circuit breaker risk data:', assessmentData.circuitBreakerRisk);
+          formik.setValues(assessmentData.circuitBreakerRisk);
+        } 
+        // Legacy support for old data structure
+        else if (assessmentData.circuitBreakers) {
+          console.log('Loading legacy circuit breaker data');
           formik.setValues({
             ...formik.values,
             circuitBreakers: assessmentData.circuitBreakers,
@@ -75,9 +101,29 @@ const CircuitBreakerRisk: React.FC = () => {
     }
   }, []);
 
+  // Handle image capture from the ImageCapture component
+  const handleImageCapture = (newImage: CapturedImage) => {
+    const updatedImages = [...formik.values.circuitBreakerImages, newImage];
+    formik.setFieldValue('circuitBreakerImages', updatedImages);
+  };
+
+  // Handle image deletion
+  const handleImageDelete = (imageId: string) => {
+    const updatedImages = formik.values.circuitBreakerImages.filter(img => img.id !== imageId);
+    formik.setFieldValue('circuitBreakerImages', updatedImages);
+  };
+
+  // Get images for a specific circuit breaker
+  const getCircuitBreakerImages = (breakerId: number) => {
+    return formik.values.circuitBreakerImages.filter(img => 
+      img.associatedWith?.type === 'circuitBreaker' && 
+      img.associatedWith?.id === breakerId.toString()
+    );
+  };
+  
   const handleAddCircuitBreaker = () => {
     const newCircuitBreaker: CircuitBreaker = {
-      id: formik.values.circuitBreakers.length + 1,
+      id: Date.now(), // Use timestamp for unique ID
       serialNumber: '',
       type: 'Air',
       age: 0,
@@ -90,8 +136,17 @@ const CircuitBreakerRisk: React.FC = () => {
   };
 
   const handleRemoveCircuitBreaker = (index: number) => {
+    const breakerId = formik.values.circuitBreakers[index].id;
+    
+    // Remove any associated images
+    const updatedImages = formik.values.circuitBreakerImages.filter(img => 
+      !(img.associatedWith?.type === 'circuitBreaker' && 
+        img.associatedWith?.id === breakerId.toString())
+    );
+    
     const newCircuitBreakers = formik.values.circuitBreakers.filter((_, i) => i !== index);
     formik.setFieldValue('circuitBreakers', newCircuitBreakers);
+    formik.setFieldValue('circuitBreakerImages', updatedImages);
   };
 
   return (
@@ -118,6 +173,22 @@ const CircuitBreakerRisk: React.FC = () => {
             <MuiGrid container spacing={3}>
 
               <MuiGrid item xs={12}>
+                <Typography variant="subtitle1" gutterBottom>
+                  General Circuit Breaker Images
+                </Typography>
+                <ImageCapture
+                  sectionType="circuitBreaker"
+                  sectionId="general"
+                  onImageCapture={handleImageCapture}
+                  onImageDelete={handleImageDelete}
+                  existingImages={formik.values.circuitBreakerImages.filter(img => 
+                    img.associatedWith?.type === 'circuitBreaker' && 
+                    img.associatedWith?.id === 'general'
+                  )}
+                />
+              </MuiGrid>
+                
+              <MuiGrid item xs={12} sx={{ mt: 3 }}>
                 <Button
                   startIcon={<AddIcon />}
                   onClick={handleAddCircuitBreaker}
@@ -281,6 +352,18 @@ const CircuitBreakerRisk: React.FC = () => {
                         </FormControl>
                       </MuiGrid>
                       <MuiGrid item xs={12}>
+                        <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
+                          Circuit Breaker Images
+                        </Typography>
+                        <ImageCapture
+                          sectionType="circuitBreaker"
+                          sectionId={circuitBreaker.id.toString()}
+                          onImageCapture={handleImageCapture}
+                          onImageDelete={handleImageDelete}
+                          existingImages={getCircuitBreakerImages(circuitBreaker.id)}
+                        />
+                      </MuiGrid>
+                      <MuiGrid item xs={12}>
                         <TextField
                           fullWidth
                           multiline
@@ -290,16 +373,16 @@ const CircuitBreakerRisk: React.FC = () => {
                           value={circuitBreaker.comments}
                           onChange={formik.handleChange}
                           error={
-  formik.touched.circuitBreakers?.[index]?.comments &&
-  typeof formik.errors.circuitBreakers?.[index] === 'object' &&
-  Boolean((formik.errors.circuitBreakers?.[index] as any)?.comments)
-}
-helperText={
-  formik.touched.circuitBreakers?.[index]?.comments &&
-  typeof formik.errors.circuitBreakers?.[index] === 'object'
-    ? (formik.errors.circuitBreakers?.[index] as any)?.comments
-    : ''
-}
+                            formik.touched.circuitBreakers?.[index]?.comments &&
+                            typeof formik.errors.circuitBreakers?.[index] === 'object' &&
+                            Boolean((formik.errors.circuitBreakers?.[index] as any)?.comments)
+                          }
+                          helperText={
+                            formik.touched.circuitBreakers?.[index]?.comments &&
+                            typeof formik.errors.circuitBreakers?.[index] === 'object'
+                              ? (formik.errors.circuitBreakers?.[index] as any)?.comments
+                              : ''
+                          }
                         />
                       </MuiGrid>
                     </MuiGrid>
