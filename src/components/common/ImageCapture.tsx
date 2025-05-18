@@ -96,6 +96,13 @@ const ImageCapture: React.FC<ImageCaptureProps> = ({
   
   // Check if camera is available
   useEffect(() => {
+    // Check if we're in a secure context (HTTPS or localhost)
+    const isSecureContext = window.isSecureContext;
+    if (!isSecureContext) {
+      console.log('Not in a secure context, camera may not work');
+      // Don't immediately set fallback mode, but log the warning
+    }
+    
     // Check if MediaDevices API is supported
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       console.log('MediaDevices API not supported in this browser');
@@ -114,7 +121,8 @@ const ImageCapture: React.FC<ImageCaptureProps> = ({
       })
       .catch(error => {
         console.error('Error checking for cameras:', error);
-        // If we can't check, we'll try using the camera anyway
+        // Set fallback mode if we can't check for cameras
+        setFallbackMode(true);
       });
   }, []);
 
@@ -122,18 +130,35 @@ const ImageCapture: React.FC<ImageCaptureProps> = ({
     setCameraError(null);
     
     if (fallbackMode) {
-      // Don't try to access camera in fallback mode
+      // In fallback mode, show the file upload UI instead
       setShowCamera(true);
+      // Automatically trigger file input click when in fallback mode
+      setTimeout(() => {
+        if (fileInputRef.current) {
+          fileInputRef.current.click();
+        }
+      }, 300);
       return;
     }
     
     try {
-      // Try with a more compatible set of constraints first
+      // First check if we're in a secure context
+      if (!window.isSecureContext) {
+        console.warn('Not in a secure context - camera access requires HTTPS');
+        setCameraError('Camera access requires HTTPS. Using file upload instead.');
+        setFallbackMode(true);
+        setShowCamera(true);
+        return;
+      }
+
+      // Try mobile-first approach for camera constraints
       let stream;
       
       try {
+        // First try: Mobile-optimized with environment (back) camera if available
         stream = await navigator.mediaDevices.getUserMedia({
           video: { 
+            facingMode: { ideal: 'environment' }, // Prefer back camera on mobile
             width: { ideal: 1280 },
             height: { ideal: 720 }
           },
@@ -141,18 +166,29 @@ const ImageCapture: React.FC<ImageCaptureProps> = ({
         });
       } catch (initialError) {
         console.error('Initial camera access failed, trying fallback:', initialError);
-        // Fallback for desktop browsers
+        
         try {
+          // Second try: Front camera fallback
           stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: 'user' }, // Try front camera as fallback
             audio: false,
           });
         } catch (secondError) {
           console.error('Secondary camera access also failed:', secondError);
-          setFallbackMode(true);
-          setShowCamera(true);
-          setCameraError('Camera access failed. Using file upload instead.');
-          return;
+          
+          try {
+            // Third try: Most basic camera request
+            stream = await navigator.mediaDevices.getUserMedia({
+              video: true,
+              audio: false,
+            });
+          } catch (thirdError) {
+            console.error('All camera access attempts failed:', thirdError);
+            setFallbackMode(true);
+            setShowCamera(true);
+            setCameraError('Camera access failed. Please upload images instead.');
+            return;
+          }
         }
       }
       
@@ -164,7 +200,8 @@ const ImageCapture: React.FC<ImageCaptureProps> = ({
           if (videoRef.current) {
             videoRef.current.play().catch(e => {
               console.error('Error playing video:', e);
-              setCameraError('Error starting video stream. Please try again or use file upload.');
+              setCameraError('Error displaying camera feed. Please try file upload instead.');
+              setFallbackMode(true);
             });
           }
         };
@@ -175,7 +212,7 @@ const ImageCapture: React.FC<ImageCaptureProps> = ({
       console.error('Error accessing camera:', error);
       setFallbackMode(true);
       setShowCamera(true);
-      setCameraError('Unable to access the camera. Using file upload instead.');
+      setCameraError('Unable to access the camera. Please upload images instead.');
     }
   };
 
@@ -389,9 +426,19 @@ const ImageCapture: React.FC<ImageCaptureProps> = ({
           
           {fallbackMode && (
             <Box sx={{ border: '1px dashed #aaa', borderRadius: '4px', p: 3, textAlign: 'center' }}>
+              <Typography variant="subtitle1" sx={{ mb: 2 }}>
+                Camera access is unavailable or restricted
+              </Typography>
+              
+              <Alert severity="info" sx={{ mb: 2 }}>
+                Camera access may require HTTPS or additional permissions.
+                You can upload an existing image from your device instead.
+              </Alert>
+              
               <input 
                 type="file" 
                 accept="image/*"
+                capture="environment"
                 ref={fileInputRef}
                 style={{ display: 'none' }}
                 onChange={(e) => {
@@ -437,16 +484,42 @@ const ImageCapture: React.FC<ImageCaptureProps> = ({
                   }
                 }}
               />
-              <Button
-                variant="contained"
-                startIcon={<FileUpload />}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                Select a photo to upload
-              </Button>
+              
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' }}>
+                <Button
+                  variant="contained"
+                  startIcon={<PhotoCamera />}
+                  onClick={() => fileInputRef.current?.click()}
+                  fullWidth
+                  sx={{ maxWidth: '300px' }}
+                >
+                  Take Photo with Device Camera
+                </Button>
+                
+                <Typography variant="body2">
+                  OR
+                </Typography>
+                
+                <Button
+                  variant="outlined"
+                  startIcon={<FileUpload />}
+                  onClick={() => {
+                    if (fileInputRef.current) {
+                      fileInputRef.current.removeAttribute('capture');
+                      fileInputRef.current.click();
+                    }
+                  }}
+                  fullWidth
+                  sx={{ maxWidth: '300px' }}
+                >
+                  Upload from Gallery
+                </Button>
+              </Box>
+              
               <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
                 Supported formats: JPG, PNG, GIF, HEIC
               </Typography>
+              
               <Button 
                 variant="text" 
                 color="secondary" 
