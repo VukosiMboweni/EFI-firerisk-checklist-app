@@ -16,7 +16,8 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { useFormik } from 'formik';
-import ImageCapture, { CapturedImage } from '../common/ImageCapture';
+import MobileImageUpload from '../common/MobileImageUpload';
+import { CapturedImage } from '../common/ImageCapture';
 import { optimizeImagesForStorage, saveChunkedAssessmentData } from '../../utils/perfUtils';
 
 // Helper types
@@ -280,7 +281,7 @@ const PassiveFireProtection: React.FC = () => {
             </MuiGrid>
             <MuiGrid container spacing={3}>
               <MuiGrid item xs={12}>
-                <ImageCapture
+                <MobileImageUpload
                   sectionType="buildingStructure"
                   sectionId="main"
                   existingImages={formik.values.buildingImages}
@@ -344,7 +345,7 @@ const PassiveFireProtection: React.FC = () => {
             </MuiGrid>
             <MuiGrid container spacing={3}>
               <MuiGrid item xs={12}>
-                <ImageCapture
+                <MobileImageUpload
                   sectionType="fireDoorsWalls"
                   sectionId="main"
                   existingImages={formik.values.fireDoorsWallsImages}
@@ -390,7 +391,7 @@ const PassiveFireProtection: React.FC = () => {
             </MuiGrid>
             <MuiGrid container spacing={3}>
               <MuiGrid item xs={12}>
-                <ImageCapture
+                <MobileImageUpload
                   sectionType="fireStops"
                   sectionId="main"
                   existingImages={formik.values.fireStopsImages}
@@ -436,7 +437,7 @@ const PassiveFireProtection: React.FC = () => {
             </MuiGrid>
             <MuiGrid container spacing={3}>
               <MuiGrid item xs={12}>
-                <ImageCapture
+                <MobileImageUpload
                   sectionType="transformerProtection"
                   sectionId="main"
                   existingImages={formik.values.transformerImages}
@@ -475,7 +476,7 @@ const PassiveFireProtection: React.FC = () => {
             {/* Additional Images for Comments */}
             <MuiGrid container spacing={3}>
               <MuiGrid item xs={12}>
-                <ImageCapture
+                <MobileImageUpload
                   sectionType="additionalComments"
                   sectionId="main"
                   existingImages={formik.values.additionalImages}

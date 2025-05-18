@@ -17,7 +17,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { EarthingAndLightning } from '../../types/assessment';
-import ImageCapture, { CapturedImage } from '../common/ImageCapture';
+import MobileImageUpload from '../common/MobileImageUpload';
+import { CapturedImage } from '../common/ImageCapture';
 
 const validationSchema = Yup.object({
   earthingStrapsCondition: Yup.string()
@@ -216,7 +217,7 @@ const EarthingAndLightningComponent: React.FC = () => {
               {/* Image capture for earthing and lightning protection */}
               <MuiGrid item xs={12} sx={{ mt: 2 }}>
                 <Typography variant="subtitle1" gutterBottom>Earthing & Lightning Protection Images</Typography>
-                <ImageCapture
+                <MobileImageUpload
                   sectionType="earthingAndLightning"
                   sectionId="general"
                   onImageCapture={handleImageCapture}

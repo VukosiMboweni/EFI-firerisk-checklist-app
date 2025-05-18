@@ -20,7 +20,8 @@ import AddIcon from '@mui/icons-material/Add';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { CircuitBreaker } from '../../types/assessment';
-import ImageCapture, { CapturedImage } from '../common/ImageCapture';
+import MobileImageUpload from '../common/MobileImageUpload';
+import { CapturedImage } from '../common/ImageCapture';
 
 const validationSchema = Yup.object({
   circuitBreakers: Yup.array().of(
@@ -183,7 +184,7 @@ const CircuitBreakerRisk: React.FC = () => {
                 <Typography variant="subtitle1" gutterBottom>
                   General Circuit Breaker Images
                 </Typography>
-                <ImageCapture
+                <MobileImageUpload
                   sectionType="circuitBreaker"
                   sectionId="general"
                   onImageCapture={handleImageCapture}
@@ -362,7 +363,7 @@ const CircuitBreakerRisk: React.FC = () => {
                         <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
                           Circuit Breaker Images
                         </Typography>
-                        <ImageCapture
+                        <MobileImageUpload
                           sectionType="circuitBreaker"
                           sectionId={circuitBreaker.id.toString()}
                           onImageCapture={(newImage) => {

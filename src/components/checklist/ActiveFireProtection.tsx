@@ -25,7 +25,8 @@ import {
   Hydrant as AssessmentHydrant,
   HoseReel as AssessmentHoseReel 
 } from '../../types/assessment';
-import ImageCapture, { CapturedImage } from '../common/ImageCapture';
+import MobileImageUpload from '../common/MobileImageUpload';
+import { CapturedImage } from '../common/ImageCapture';
 import { optimizeImagesForStorage, saveChunkedAssessmentData } from '../../utils/perfUtils';
 
 interface ActiveFireProtectionValues {
@@ -511,7 +512,7 @@ const ActiveFireProtection: React.FC = () => {
 
               <MuiGrid item xs={12}>
                 <Typography variant="subtitle1" sx={{ mb: 2 }}>General Extinguisher Images</Typography>
-                <ImageCapture
+                <MobileImageUpload
                   sectionType="fireExtinguishersSection"
                   sectionId="general"
                   existingImages={formik.values.extinguisherImages}
@@ -887,7 +888,7 @@ const ActiveFireProtection: React.FC = () => {
                         <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, mt: 2, borderBottom: '1px solid #e0e0e0', pb: 1 }}>
                           Images for Extinguisher {index + 1}
                         </Typography>
-                        <ImageCapture
+                        <MobileImageUpload
                           sectionType="portableExtinguisherUnit"
                           sectionId={String(extinguisher.id)}
                           existingImages={extinguisher.images || []}
@@ -917,7 +918,7 @@ const ActiveFireProtection: React.FC = () => {
                 </Button>
                 <MuiGrid item xs={12} sx={{mb:2}}>
                   <Typography variant="subtitle1" sx={{ mb: 1 }}>General Hydrant Images</Typography>
-                  <ImageCapture
+                  <MobileImageUpload
                     sectionType="hydrantsSection"
                     sectionId="general"
                     existingImages={formik.values.hydrantImages}
@@ -1102,7 +1103,7 @@ const ActiveFireProtection: React.FC = () => {
                         </MuiGrid>
                         <MuiGrid item xs={12}>
                           <Typography variant="subtitle2" sx={{ mb: 1 }}>Images for Hydrant {index + 1}</Typography>
-                          <ImageCapture
+                          <MobileImageUpload
                             sectionType="hydrantUnit"
                             sectionId={String(hydrant.id)}
                             existingImages={hydrant.images || []}
@@ -1133,7 +1134,7 @@ const ActiveFireProtection: React.FC = () => {
                 </Button>
                 <MuiGrid item xs={12} sx={{mb:2}}>
                   <Typography variant="subtitle1" sx={{ mb: 1 }}>General Hose Reel Images</Typography>
-                  <ImageCapture
+                  <MobileImageUpload
                     sectionType="hoseReelsSection"
                     sectionId="general"
                     existingImages={formik.values.hoseReelImages}
@@ -1423,7 +1424,7 @@ const ActiveFireProtection: React.FC = () => {
                         )}
                         <MuiGrid item xs={12}>
                           <Typography variant="subtitle2" sx={{ mb: 1 }}>Images for Hose Reel {index + 1}</Typography>
-                          <ImageCapture
+                          <MobileImageUpload
                             sectionType="hoseReelUnit"
                             sectionId={String(hoseReel.id)}
                             existingImages={hoseReel.images || []}
@@ -1514,7 +1515,7 @@ const ActiveFireProtection: React.FC = () => {
                   </MuiGrid>
                   <MuiGrid item xs={12}>
                     <Typography variant="subtitle1" sx={{ mb: 2 }}>Fire Alarm Images</Typography>
-                    <ImageCapture
+                    <MobileImageUpload
                       sectionType="fireAlarmsSection"
                       sectionId="general"
                       existingImages={formik.values.fireAlarmImages}
@@ -1602,7 +1603,7 @@ const ActiveFireProtection: React.FC = () => {
                   </MuiGrid>
                   <MuiGrid item xs={12}>
                     <Typography variant="subtitle1" sx={{ mb: 2 }}>Auto Suppression System Images</Typography>
-                    <ImageCapture
+                    <MobileImageUpload
                       sectionType="autoSuppressionSection"
                       sectionId="general"
                       existingImages={formik.values.autoSuppressionImages}
@@ -1690,7 +1691,7 @@ const ActiveFireProtection: React.FC = () => {
                   </MuiGrid>
                   <MuiGrid item xs={12}>
                     <Typography variant="subtitle1" sx={{ mb: 2 }}>Gas Suppression System Images</Typography>
-                    <ImageCapture
+                    <MobileImageUpload
                       sectionType="gasSuppressionSection"
                       sectionId="general"
                       existingImages={formik.values.gasSuppressionImages}
@@ -1788,7 +1789,7 @@ const ActiveFireProtection: React.FC = () => {
                   </MuiGrid>
                   <MuiGrid item xs={12}>
                     <Typography variant="subtitle1" sx={{ mb: 2 }}>HVAC Dampers Images</Typography>
-                    <ImageCapture
+                    <MobileImageUpload
                       sectionType="hvacDampersSection"
                       sectionId="general"
                       existingImages={formik.values.hvacImages}

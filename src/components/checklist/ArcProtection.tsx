@@ -19,7 +19,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { ArcProtection } from '../../types/assessment';
-import ImageCapture, { CapturedImage } from '../common/ImageCapture';
+import MobileImageUpload from '../common/MobileImageUpload';
+import { CapturedImage } from '../common/ImageCapture';
 
 const validationSchema = Yup.object({
   systemPresent: Yup.boolean().required('Required'),
@@ -183,7 +184,7 @@ const ArcProtectionComponent: React.FC = () => {
               {/* Image capture for arc protection */}
               <MuiGrid item xs={12} sx={{ mt: 2 }}>
                 <Typography variant="subtitle1" gutterBottom>Arc Protection Images</Typography>
-                <ImageCapture
+                <MobileImageUpload
                   sectionType="arcProtection"
                   sectionId="general"
                   onImageCapture={handleImageCapture}

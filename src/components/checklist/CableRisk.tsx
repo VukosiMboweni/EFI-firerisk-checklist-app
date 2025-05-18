@@ -22,7 +22,8 @@ import AddIcon from '@mui/icons-material/Add';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { Cable } from '../../types/assessment';
-import ImageCapture, { CapturedImage } from '../common/ImageCapture';
+import MobileImageUpload from '../common/MobileImageUpload';
+import { CapturedImage } from '../common/ImageCapture';
 
 const validationSchema = Yup.object({
   cables: Yup.array().of(
@@ -392,7 +393,7 @@ const CableRisk: React.FC = () => {
                       {/* Add image capture for individual cable */}
                       <MuiGrid item xs={12} sx={{ mt: 2 }}>
                         <Typography variant="subtitle2" gutterBottom>Cable Images</Typography>
-                        <ImageCapture
+                        <MobileImageUpload
                           sectionType="cable"
                           sectionId={cable.id.toString()}
                           onImageCapture={(newImage) => {
@@ -429,7 +430,7 @@ const CableRisk: React.FC = () => {
               {/* Add general image capture for cables */}
               <MuiGrid item xs={12} sx={{ mt: 2 }}>
                 <Typography variant="subtitle1" gutterBottom>General Cable Images</Typography>
-                <ImageCapture
+                <MobileImageUpload
                   sectionType="cable"
                   sectionId="general"
                   onImageCapture={handleImageCapture}
