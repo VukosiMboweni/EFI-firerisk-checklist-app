@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -18,20 +18,33 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogContentText,
   DialogActions,
+  Menu,
+  MenuItem,
+  CircularProgress,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import SendIcon from '@mui/icons-material/Send';
+import DownloadIcon from '@mui/icons-material/Download';
+import FolderZipIcon from '@mui/icons-material/FolderZip';
 import { AssessmentSetup } from '../types/assessment';
 import { CapturedImage } from '../components/common/ImageCapture';
+import { exportAssessmentAsZip, generatePDF } from '../utils/exportUtils';
 
 const Review: React.FC = () => {
   const navigate = useNavigate();
+  const documentRef = useRef<HTMLDivElement>(null);
   const [assessmentData, setAssessmentData] = useState<any | null>(null);
   const [setupData, setSetupData] = useState<AssessmentSetup | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const [exportMenu, setExportMenu] = useState<null | HTMLElement>(null);
+  const [exportSuccessDialog, setExportSuccessDialog] = useState(false);
+  const [exportErrorDialog, setExportErrorDialog] = useState(false);
+  const [exportError, setExportError] = useState<string>('');
 
   useEffect(() => {
     // Load assessment data from localStorage
@@ -62,9 +75,50 @@ const Review: React.FC = () => {
     navigate('/checklist');
   };
 
-  const handleGeneratePDF = () => {
-    // TODO: Implement PDF generation
-    alert('PDF generation will be implemented in a future update');
+  const handleExportMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setExportMenu(event.currentTarget);
+  };
+
+  const handleExportMenuClose = () => {
+    setExportMenu(null);
+  };
+
+  const handleGeneratePDF = async () => {
+    if (!documentRef.current) return;
+    handleExportMenuClose();
+    setExporting(true);
+    
+    try {
+      const pdf = await generatePDF(documentRef.current, 'assessment.pdf');
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(pdf);
+      link.download = `${setupData?.substationName || 'Fire_Risk_Assessment'}.pdf`;
+      link.click();
+      setExportSuccessDialog(true);
+    } catch (err) {
+      console.error('Error generating PDF:', err);
+      setExportError('Failed to generate PDF. Please try again.');
+      setExportErrorDialog(true);
+    } finally {
+      setExporting(false);
+    }
+  };
+  
+  const handleExportZip = async () => {
+    if (!documentRef.current || !assessmentData || !setupData) return;
+    handleExportMenuClose();
+    setExporting(true);
+    
+    try {
+      await exportAssessmentAsZip(assessmentData, setupData, documentRef.current);
+      setExportSuccessDialog(true);
+    } catch (err) {
+      console.error('Error exporting ZIP:', err);
+      setExportError('Failed to export assessment as ZIP. Please try again.');
+      setExportErrorDialog(true);
+    } finally {
+      setExporting(false);
+    }
   };
 
   const handleSubmit = () => {
@@ -118,7 +172,7 @@ const Review: React.FC = () => {
 
   return (
     <Container maxWidth="lg">
-      <Box sx={{ my: 4 }}>
+      <Box sx={{ my: 4 }} ref={documentRef}>
         <Typography variant="h3" align="center" gutterBottom sx={{ mb: 4, fontWeight: 700 }}>
           Fire Risk Assessment Document
         </Typography>
@@ -139,10 +193,7 @@ const Review: React.FC = () => {
                 <Typography variant="subtitle1">Substation Name</Typography>
                 <Typography variant="body1" gutterBottom>{setupData.substationName}</Typography>
               </Grid>
-              <Grid item xs={12} md={6}>
-                <Typography variant="subtitle1">Address</Typography>
-                <Typography variant="body1" gutterBottom>{setupData.address}</Typography>
-              </Grid>
+              {/* Address field removed from setup */}
               <Grid item xs={12} md={6}>
                 <Typography variant="subtitle1">Region</Typography>
                 <Typography variant="body1" gutterBottom>{setupData.region}</Typography>
@@ -1057,28 +1108,77 @@ const Review: React.FC = () => {
           <Button
             variant="outlined"
             onClick={handleBack}
+            disabled={exporting}
           >
             Back to Checklist
           </Button>
           <Box>
             <Button
               variant="contained"
-              startIcon={<PictureAsPdfIcon />}
-              onClick={handleGeneratePDF}
+              startIcon={exporting ? <CircularProgress size={24} color="inherit" /> : <DownloadIcon />}
+              onClick={handleExportMenuOpen}
+              disabled={exporting}
               sx={{ mr: 2 }}
             >
-              Generate PDF
+              Export Assessment
             </Button>
+            <Menu
+              anchorEl={exportMenu}
+              open={Boolean(exportMenu)}
+              onClose={handleExportMenuClose}
+            >
+              <MenuItem onClick={handleGeneratePDF}>
+                <PictureAsPdfIcon sx={{ mr: 1 }} />
+                Export as PDF
+              </MenuItem>
+              <MenuItem onClick={handleExportZip}>
+                <FolderZipIcon sx={{ mr: 1 }} />
+                Export as ZIP (with images)
+              </MenuItem>
+            </Menu>
             <Button
               variant="contained"
               color="primary"
               startIcon={<SendIcon />}
               onClick={handleSubmit}
+              disabled={exporting}
             >
               Submit Assessment
             </Button>
           </Box>
         </Box>
+        
+        {/* Export Success Dialog */}
+        <Dialog
+          open={exportSuccessDialog}
+          onClose={() => setExportSuccessDialog(false)}
+        >
+          <DialogTitle>Export Successful</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Your assessment has been successfully exported.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setExportSuccessDialog(false)}>Close</Button>
+          </DialogActions>
+        </Dialog>
+        
+        {/* Export Error Dialog */}
+        <Dialog
+          open={exportErrorDialog}
+          onClose={() => setExportErrorDialog(false)}
+        >
+          <DialogTitle>Export Failed</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              {exportError}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setExportErrorDialog(false)}>Close</Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </Container>
   );
