@@ -76,14 +76,39 @@ const PassiveFireProtection: React.FC = () => {
     initialValues,
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        // Create deep copies of image arrays to ensure React state updates properly
-        const deepCopyValues = {
+        // Process each image array to ensure they are properly formatted
+        // and have all required properties
+        const processImages = (images: CapturedImage[]) => {
+          return images.map((img, index) => ({
+            ...img,
+            id: img.id || `img-${index}-${Date.now()}`,
+            timestamp: img.timestamp || new Date().toISOString(),
+            associatedWith: img.associatedWith || {
+              type: 'passiveFireProtection',
+              id: 'main'
+            },
+            dataUrl: img.dataUrl
+          }));
+        };
+
+        // Create a new data object with all processed image arrays
+        const processedValues = {
           ...values,
-          buildingImages: JSON.parse(JSON.stringify(values.buildingImages || [])),
-          fireDoorsWallsImages: JSON.parse(JSON.stringify(values.fireDoorsWallsImages || [])),
-          fireStopsImages: JSON.parse(JSON.stringify(values.fireStopsImages || [])),
-          transformerImages: JSON.parse(JSON.stringify(values.transformerImages || [])),
-          additionalImages: JSON.parse(JSON.stringify(values.additionalImages || []))
+          buildingImages: processImages(values.buildingImages || []),
+          fireDoorsWallsImages: processImages(values.fireDoorsWallsImages || []),
+          fireStopsImages: processImages(values.fireStopsImages || []),
+          transformerImages: processImages(values.transformerImages || []),
+          additionalImages: processImages(values.additionalImages || [])
+        };
+        
+        // Create deep copies of processed image arrays to ensure React state updates properly
+        const deepCopyValues = {
+          ...processedValues,
+          buildingImages: JSON.parse(JSON.stringify(processedValues.buildingImages)),
+          fireDoorsWallsImages: JSON.parse(JSON.stringify(processedValues.fireDoorsWallsImages)),
+          fireStopsImages: JSON.parse(JSON.stringify(processedValues.fireStopsImages)),
+          transformerImages: JSON.parse(JSON.stringify(processedValues.transformerImages)),
+          additionalImages: JSON.parse(JSON.stringify(processedValues.additionalImages))
         };
         
         const assessmentJson = localStorage.getItem('assessmentData');
@@ -92,7 +117,11 @@ const PassiveFireProtection: React.FC = () => {
         // Store all data under a single key for passive fire protection
         assessmentData.passiveFireProtection = deepCopyValues;
         
+        // Update formik values with processed data
+        formik.setValues(deepCopyValues, false);
+        
         localStorage.setItem('assessmentData', JSON.stringify(assessmentData));
+        console.log('Saved passive fire protection data successfully');
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
       } catch (err) {
