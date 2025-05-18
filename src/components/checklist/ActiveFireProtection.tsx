@@ -173,75 +173,104 @@ const ActiveFireProtection: React.FC = () => {
     onSubmit: async (values: ActiveFireProtectionValues, { setSubmitting }) => {
       try {
         setIsProcessing(true);
+        console.log('Starting save of Active Fire Protection section with image optimization...');
         
         // Define a type for our optimization results to help with TypeScript
         type OptimizationResult = {
           images: CapturedImage[];
           index?: number;
-          type?: string;
+          type: string;
         };
+        
+        // Create a deep copy of the values to update first (before any async operations)
+        const updatedValues = JSON.parse(JSON.stringify(values)) as ActiveFireProtectionValues;
         
         // Create arrays to store all optimization tasks
         const optimizationTasks: Promise<OptimizationResult>[] = [];
         
+        console.log('Processing portable fire extinguisher images...');
         // Process portable fire extinguisher images
         values.portableFireExtinguishers.forEach((extinguisher, index) => {
           if (extinguisher.images && extinguisher.images.length > 0) {
             optimizationTasks.push(
-              handleImageOptimization(extinguisher.images).then(images => ({ 
-                images, 
-                index, 
-                type: 'extinguisher'
-              }))
+              handleImageOptimization(extinguisher.images)
+                .then(images => ({ 
+                  images, 
+                  index, 
+                  type: 'extinguisher'
+                }))
+                .catch(error => {
+                  console.error(`Error optimizing extinguisher ${index} images:`, error);
+                  return { images: extinguisher.images || [], index, type: 'extinguisher' };
+                })
             );
           }
         });
         
+        console.log('Processing hydrant images...');
         // Process hydrant images
         values.hydrants.forEach((hydrant, index) => {
           if (hydrant.images && hydrant.images.length > 0) {
             optimizationTasks.push(
-              handleImageOptimization(hydrant.images).then(images => ({ 
-                images, 
-                index, 
-                type: 'hydrant'
-              }))
+              handleImageOptimization(hydrant.images)
+                .then(images => ({ 
+                  images, 
+                  index, 
+                  type: 'hydrant'
+                }))
+                .catch(error => {
+                  console.error(`Error optimizing hydrant ${index} images:`, error);
+                  return { images: hydrant.images || [], index, type: 'hydrant' };
+                })
             );
           }
         });
         
+        console.log('Processing hose reel images...');
         // Process hose reel images
         values.hoseReels.forEach((hoseReel, index) => {
           if (hoseReel.images && hoseReel.images.length > 0) {
             optimizationTasks.push(
-              handleImageOptimization(hoseReel.images).then(images => ({ 
-                images, 
-                index, 
-                type: 'hoseReel'
-              }))
+              handleImageOptimization(hoseReel.images)
+                .then(images => ({ 
+                  images, 
+                  index, 
+                  type: 'hoseReel'
+                }))
+                .catch(error => {
+                  console.error(`Error optimizing hose reel ${index} images:`, error);
+                  return { images: hoseReel.images || [], index, type: 'hoseReel' };
+                })
             );
           }
         });
         
-        // Process standalone image collections
-        const imageCollections: [keyof ActiveFireProtectionValues, CapturedImage[]][] = [
-          ['extinguisherImages', values.extinguisherImages],
-          ['hydrantImages', values.hydrantImages],
-          ['hoseReelImages', values.hoseReelImages],
-          ['autoSuppressionImages', values.autoSuppressionImages],
-          ['fireAlarmImages', values.fireAlarmImages],
-          ['gasSuppressionImages', values.gasSuppressionImages],
-          ['hvacImages', values.hvacImages]
+        console.log('Processing standalone image collections...');
+        // Process standalone image collections with explicit type mapping
+        const imageCollections = [
+          { key: 'extinguisherImages', images: values.extinguisherImages },
+          { key: 'hydrantImages', images: values.hydrantImages },
+          { key: 'hoseReelImages', images: values.hoseReelImages },
+          { key: 'autoSuppressionImages', images: values.autoSuppressionImages },
+          { key: 'fireAlarmImages', images: values.fireAlarmImages },
+          { key: 'gasSuppressionImages', images: values.gasSuppressionImages },
+          { key: 'hvacImages', images: values.hvacImages }
         ];
         
         // Add all image collections to the optimization tasks
-        imageCollections.forEach(([key, images]) => {
+        imageCollections.forEach(({ key, images }) => {
           if (images && images.length > 0) {
+            console.log(`Adding optimization task for ${key} with ${images.length} images`);
             optimizationTasks.push(
-              handleImageOptimization(images).then(optimizedImages => ({
-                images: optimizedImages,
-                type: key as string
-              }))
+              handleImageOptimization(images)
+                .then(optimizedImages => ({
+                  images: optimizedImages,
+                  type: key
+                }))
+                .catch(error => {
+                  console.error(`Error optimizing ${key}:`, error);
+                  return { images: images || [], type: key };
+                })
             );
           }
         });
@@ -249,24 +278,49 @@ const ActiveFireProtection: React.FC = () => {
         console.log(`Optimizing ${optimizationTasks.length} image collections`);
         
         // Wait for all image optimizations to complete
-        const optimizationResults = await Promise.all(optimizationTasks);
-        
-        // Create a deep copy of the values to update
-        const updatedValues = JSON.parse(JSON.stringify(values)) as ActiveFireProtectionValues;
-        
-        // Process optimization results
-        optimizationResults.forEach(result => {
-          if (result.type === 'extinguisher' && typeof result.index === 'number') {
-            updatedValues.portableFireExtinguishers[result.index].images = result.images;
-          } else if (result.type === 'hydrant' && typeof result.index === 'number') {
-            updatedValues.hydrants[result.index].images = result.images;
-          } else if (result.type === 'hoseReel' && typeof result.index === 'number') {
-            updatedValues.hoseReels[result.index].images = result.images;
-          } else if (result.type) {
-            // Handle standalone image collections
-            updatedValues[result.type as keyof ActiveFireProtectionValues] = result.images as any;
-          }
-        });
+        if (optimizationTasks.length > 0) {
+          const optimizationResults = await Promise.all(optimizationTasks);
+          
+          console.log(`Processing ${optimizationResults.length} optimization results`);
+          
+          // Process optimization results
+          optimizationResults.forEach(result => {
+            if (result.type === 'extinguisher' && typeof result.index === 'number') {
+              updatedValues.portableFireExtinguishers[result.index].images = result.images;
+            } else if (result.type === 'hydrant' && typeof result.index === 'number') {
+              updatedValues.hydrants[result.index].images = result.images;
+            } else if (result.type === 'hoseReel' && typeof result.index === 'number') {
+              updatedValues.hoseReels[result.index].images = result.images;
+            } else {
+              // Handle standalone image collections - use direct property access
+              switch (result.type) {
+                case 'extinguisherImages':
+                  updatedValues.extinguisherImages = result.images;
+                  break;
+                case 'hydrantImages':
+                  updatedValues.hydrantImages = result.images;
+                  break;
+                case 'hoseReelImages':
+                  updatedValues.hoseReelImages = result.images;
+                  break;
+                case 'autoSuppressionImages':
+                  updatedValues.autoSuppressionImages = result.images;
+                  break;
+                case 'fireAlarmImages':
+                  updatedValues.fireAlarmImages = result.images;
+                  break;
+                case 'gasSuppressionImages':
+                  updatedValues.gasSuppressionImages = result.images;
+                  break;
+                case 'hvacImages':
+                  updatedValues.hvacImages = result.images;
+                  break;
+                default:
+                  console.warn(`Unknown image collection type: ${result.type}`);
+              }
+            }
+          });
+        }
         
         // Get existing assessment data
         const assessmentJson = localStorage.getItem('assessmentData');
