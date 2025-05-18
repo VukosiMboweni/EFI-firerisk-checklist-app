@@ -3,6 +3,7 @@ import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { CapturedImage } from '../components/common/ImageCapture';
+import { generateProfessionalPDF } from './pdfGenerator';
 
 /**
  * Extracts all images from the assessment data
@@ -117,8 +118,8 @@ export const extractAllImages = (assessmentData: any): {
       }
       
       // Process fire extinguisher images
-      if (af.fireExtinguishers && Array.isArray(af.fireExtinguishers)) {
-        af.fireExtinguishers.forEach((extinguisher: any, extIdx: number) => {
+      if (af.portableFireExtinguishers && Array.isArray(af.portableFireExtinguishers)) {
+        af.portableFireExtinguishers.forEach((extinguisher: any, extIdx: number) => {
           if (extinguisher.images && Array.isArray(extinguisher.images)) {
             extinguisher.images.forEach((img: CapturedImage, idx: number) => {
               addImage(img.dataUrl, 'Active Fire Protection - Fire Extinguishers', idx, `Extinguisher ${extIdx + 1}`);
@@ -258,6 +259,10 @@ export const extractAllImages = (assessmentData: any): {
 /**
  * Generates a PDF from the provided HTML element
  */
+/**
+ * Legacy HTML-to-canvas PDF generation method (kept for reference)
+ * This has been replaced by the more sophisticated direct PDF generation in pdfGenerator.ts
+ */
 export const generatePDF = async (element: HTMLElement, filename: string): Promise<Blob> => {
   // Use landscape orientation for more width
   const pdf = new jsPDF('p', 'mm', 'a4');
@@ -266,8 +271,6 @@ export const generatePDF = async (element: HTMLElement, filename: string): Promi
   const margin = 10;
   const pdfWidth = 210 - (margin * 2); // A4 width minus margins
   const pdfHeight = 297 - (margin * 2); // A4 height minus margins
-  
-  // Use the original element directly since we're just using temporary styling
   
   // Apply some temporary styling to make content more compact for PDF
   const tempStyles = document.createElement('style');
@@ -681,7 +684,7 @@ export const createAssessmentZip = async (
 export const exportAssessmentAsZip = async (
   assessmentData: any,
   setupData: any,
-  element: HTMLElement
+  _element: HTMLElement // Parameter kept for API compatibility but no longer used
 ): Promise<void> => {
   try {
     // Generate a filename based on assessment data
@@ -692,8 +695,8 @@ export const exportAssessmentAsZip = async (
     // Extract all images from the assessment data
     const images = extractAllImages(assessmentData);
     
-    // Generate the PDF
-    const pdfBlob = await generatePDF(element, 'assessment.pdf');
+    // Generate the professional PDF with direct content rendering
+    const pdfBlob = await generateProfessionalPDF(assessmentData, setupData);
     
     // Create and download the ZIP file
     await createAssessmentZip(pdfBlob, images, zipFilename, assessmentData, setupData);
