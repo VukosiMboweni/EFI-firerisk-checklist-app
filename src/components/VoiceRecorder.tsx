@@ -42,7 +42,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ section = 'General' }) =>
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
-  const timerRef = useRef<number | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   
   // Load saved recordings from localStorage on component mount
   useEffect(() => {

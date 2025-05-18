@@ -88,7 +88,8 @@ const Review: React.FC = () => {
     setExporting(true);
     
     try {
-      const pdf = await generatePDF(documentRef.current, 'assessment.pdf');
+      // Make sure we're only passing one argument to generatePDF as per its signature
+      const pdf = await generatePDF(documentRef.current);
       const link = document.createElement('a');
       link.href = URL.createObjectURL(pdf);
       link.download = `${setupData?.substationName || 'Fire_Risk_Assessment'}.pdf`;

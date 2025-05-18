@@ -684,7 +684,7 @@ export const createAssessmentZip = async (
 export const exportAssessmentAsZip = async (
   assessmentData: any,
   setupData: any,
-  _element: HTMLElement // Parameter kept for API compatibility but no longer used
+  _element: HTMLElement // Required for compatibility with existing code but not used
 ): Promise<void> => {
   try {
     // Generate a filename based on assessment data
