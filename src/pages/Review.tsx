@@ -26,7 +26,6 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import SendIcon from '@mui/icons-material/Send';
 import DownloadIcon from '@mui/icons-material/Download';
 import FolderZipIcon from '@mui/icons-material/FolderZip';
 import { AssessmentSetup } from '../types/assessment';
@@ -121,11 +120,7 @@ const Review: React.FC = () => {
     }
   };
 
-  const handleSubmit = () => {
-    // TODO: Implement submission to backend
-    alert('Your assessment has been submitted successfully!');
-    navigate('/');
-  };
+  // Submit functionality removed as we're now using the export functionality
 
   // Render a section with data or a default message if no data exists
   const renderSection = (data: any, renderContent: (data: any) => JSX.Element): JSX.Element => {
@@ -1136,15 +1131,7 @@ const Review: React.FC = () => {
                 Export as ZIP (with images)
               </MenuItem>
             </Menu>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<SendIcon />}
-              onClick={handleSubmit}
-              disabled={exporting}
-            >
-              Submit Assessment
-            </Button>
+            {/* Submit button removed - export functionality is now the primary action */}
           </Box>
         </Box>
         
