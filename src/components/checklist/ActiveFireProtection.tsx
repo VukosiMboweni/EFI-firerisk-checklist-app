@@ -319,7 +319,11 @@ const ActiveFireProtection: React.FC = () => {
             hydrantImages: loadedAFP.hydrantImages || [],
             hoseReels: (loadedAFP.hoseReels || []).map((hr: AssessmentHoseReel) => ({ ...hr, images: hr.images || [] })),
             hoseReelImages: loadedAFP.hoseReelImages || [],
-            // ... other sections
+            // Initialize all other image arrays
+            autoSuppressionImages: loadedAFP.autoSuppressionImages || [],
+            fireAlarmImages: loadedAFP.fireAlarmImages || [],
+            gasSuppressionImages: loadedAFP.gasSuppressionImages || [],
+            hvacImages: loadedAFP.hvacImages || [],
           });
         }
       }
