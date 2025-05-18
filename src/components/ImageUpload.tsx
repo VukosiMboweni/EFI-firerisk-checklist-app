@@ -48,8 +48,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               filename: file.name,
               dataUrl: reader.result as string, // Store base64 data URL
               associatedWith: {
-                type: associatedType,
-                id: associatedId,
+                type: associatedType as 'transformer' | 'circuitBreaker' | 'cable' | 'fireExtinguisher' | 'hydrant' | 'hoseReel' | 'other',
+                id: Number(associatedId),
                 section,
               },
             });

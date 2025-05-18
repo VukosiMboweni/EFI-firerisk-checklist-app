@@ -18,7 +18,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useFormik } from 'formik';
-import * as Yup from 'yup';
+// Yup import removed as it's no longer needed
+// import * as Yup from 'yup';
 import { 
   PortableFireExtinguisher as AssessmentPortableFireExtinguisher,
   Hydrant as AssessmentHydrant,
@@ -75,11 +76,13 @@ interface ActiveFireProtectionValues {
   hvacImages: CapturedImage[];
 }
 
+// Validation schema has been commented out to resolve TypeScript warnings
+// If validation is needed in the future, uncomment and implement the full schema
+/*
 const validationSchema = Yup.object({
   portableFireExtinguishers: Yup.array().of(
     Yup.object({
       id: Yup.number().required('Required'),
-      type: Yup.string().required('Type is required'),
       // Add other validations for AssessmentPortableFireExtinguisher fields as needed
     })
   ),
@@ -102,6 +105,7 @@ const validationSchema = Yup.object({
   }),
   // ... rest of validationSchema
 });
+*/
 
 const ActiveFireProtection: React.FC = () => {
   const [saved, setSaved] = useState(false);

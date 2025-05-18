@@ -1,3 +1,5 @@
+import { AssessmentData } from '../types/assessment';
+
 export const saveAssessmentData = async (data: AssessmentData) => {
   try {
     const assessmentData = localStorage.getItem('assessmentData');

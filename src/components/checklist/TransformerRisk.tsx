@@ -17,7 +17,8 @@ import {
   IconButton,
   Badge,
   Tooltip,
-  Divider,
+  // Divider removed as it's not being used
+  // Divider,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import DeleteIcon from '@mui/icons-material/Delete';

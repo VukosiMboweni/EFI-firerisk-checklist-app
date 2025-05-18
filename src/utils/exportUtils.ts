@@ -263,7 +263,7 @@ export const extractAllImages = (assessmentData: any): {
  * Legacy HTML-to-canvas PDF generation method (kept for reference)
  * This has been replaced by the more sophisticated direct PDF generation in pdfGenerator.ts
  */
-export const generatePDF = async (element: HTMLElement, filename: string): Promise<Blob> => {
+export const generatePDF = async (element: HTMLElement): Promise<Blob> => {
   // Use landscape orientation for more width
   const pdf = new jsPDF('p', 'mm', 'a4');
   
