@@ -70,6 +70,7 @@ interface ActiveFireProtectionValues {
     numberOfDampers: number;
     type: string;
     location: string;
+    fireRating: number;
     lastServiceDate: string;
     nextServiceDate: string;
     comments: string;
@@ -160,6 +161,7 @@ const ActiveFireProtection: React.FC = () => {
         numberOfDampers: 0,
         type: '',
         location: '',
+        fireRating: 60,
         lastServiceDate: '',
         nextServiceDate: '',
         comments: '',
@@ -1752,6 +1754,17 @@ const ActiveFireProtection: React.FC = () => {
                       label="Location"
                       value={formik.values.hvacDampers.location}
                       onChange={formik.handleChange}
+                    />
+                  </MuiGrid>
+                  <MuiGrid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      name="hvacDampers.fireRating"
+                      label="Fire Rating (minutes)"
+                      value={formik.values.hvacDampers.fireRating || ''}
+                      onChange={formik.handleChange}
+                      InputProps={{ inputProps: { min: 0 } }}
                     />
                   </MuiGrid>
                   <MuiGrid item xs={12} sm={6}>

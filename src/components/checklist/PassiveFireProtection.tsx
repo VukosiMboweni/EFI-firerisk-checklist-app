@@ -39,11 +39,14 @@ interface PassiveFireProtectionValues {
   buildingImages: CapturedImage[];
   fireDoorsPresent: string;
   fireDoorsCondition: string;
+  fireDoorsRating: number;
   fireWallsPresent: string;
   fireWallsCondition: string;
+  fireWallsRating: number;
   fireDoorsWallsImages: CapturedImage[];
   fireStopsPresent: string;
   fireStopsCondition: string;
+  fireStopsRating: number;
   fireStopsImages: CapturedImage[];
   transformerBundingPresent: string;
   transformerBundingCondition: string;
@@ -63,11 +66,14 @@ const PassiveFireProtection: React.FC = () => {
     buildingImages: [],
     fireDoorsPresent: 'Yes',
     fireDoorsCondition: 'Good',
+    fireDoorsRating: 60,
     fireWallsPresent: 'Yes',
     fireWallsCondition: 'Good',
+    fireWallsRating: 60,
     fireDoorsWallsImages: [],
     fireStopsPresent: 'Yes',
     fireStopsCondition: 'Good',
+    fireStopsRating: 60,
     fireStopsImages: [],
     transformerBundingPresent: 'Yes',
     transformerBundingCondition: 'Good',
@@ -326,6 +332,18 @@ const PassiveFireProtection: React.FC = () => {
               </MuiGrid>
               
               <MuiGrid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  type="number"
+                  name="fireDoorsRating"
+                  label="Fire Doors Rating (minutes)"
+                  value={formik.values.fireDoorsRating || ''}
+                  onChange={formik.handleChange}
+                  InputProps={{ inputProps: { min: 0 } }}
+                />
+              </MuiGrid>
+              
+              <MuiGrid item xs={12} md={6}>
                 <RadioSelection
                   label="Fire Walls Present"
                   name="fireWallsPresent"
@@ -340,6 +358,18 @@ const PassiveFireProtection: React.FC = () => {
                   name="fireWallsCondition"
                   options={conditionOptions}
                   helpText="Rate the condition of the fire walls"
+                />
+              </MuiGrid>
+              
+              <MuiGrid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  type="number"
+                  name="fireWallsRating"
+                  label="Fire Walls Rating (minutes)"
+                  value={formik.values.fireWallsRating || ''}
+                  onChange={formik.handleChange}
+                  InputProps={{ inputProps: { min: 0 } }}
                 />
               </MuiGrid>
             </MuiGrid>
@@ -386,6 +416,18 @@ const PassiveFireProtection: React.FC = () => {
                   name="fireStopsCondition"
                   options={conditionOptions}
                   helpText="Rate the condition of the fire stops"
+                />
+              </MuiGrid>
+              
+              <MuiGrid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  type="number"
+                  name="fireStopsRating"
+                  label="Fire Stops Rating (minutes)"
+                  value={formik.values.fireStopsRating || ''}
+                  onChange={formik.handleChange}
+                  InputProps={{ inputProps: { min: 0 } }}
                 />
               </MuiGrid>
             </MuiGrid>
