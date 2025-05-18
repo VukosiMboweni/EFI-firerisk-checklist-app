@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -12,6 +12,7 @@ import {
   Button,
   IconButton,
   MenuItem,
+  CircularProgress,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AddIcon from '@mui/icons-material/Add';
@@ -24,6 +25,7 @@ import {
   HoseReel as AssessmentHoseReel 
 } from '../../types/assessment';
 import ImageCapture, { CapturedImage } from '../common/ImageCapture';
+import { optimizeImagesForStorage, saveChunkedAssessmentData } from '../../utils/perfUtils';
 
 interface ActiveFireProtectionValues {
   portableFireExtinguishers: AssessmentPortableFireExtinguisher[];
@@ -102,7 +104,14 @@ const validationSchema = Yup.object({
 });
 
 const ActiveFireProtection: React.FC = () => {
-  const [saved, setSaved] = React.useState(false);
+  const [saved, setSaved] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Create optimized version of image handler with useCallback to prevent unnecessary rerenders
+  const handleImageOptimization = useCallback(async (images: CapturedImage[]) => {
+    if (!images || images.length === 0) return [];
+    return await optimizeImagesForStorage(images);
+  }, []);
 
   const formik = useFormik<ActiveFireProtectionValues>({
     initialValues: {
@@ -156,21 +165,127 @@ const ActiveFireProtection: React.FC = () => {
     // validationSchema,
     onSubmit: async (values: ActiveFireProtectionValues, { setSubmitting }) => {
       try {
+        setIsProcessing(true);
+        
+        // Define a type for our optimization results to help with TypeScript
+        type OptimizationResult = {
+          images: CapturedImage[];
+          index?: number;
+          type?: string;
+        };
+        
+        // Create arrays to store all optimization tasks
+        const optimizationTasks: Promise<OptimizationResult>[] = [];
+        
+        // Process portable fire extinguisher images
+        values.portableFireExtinguishers.forEach((extinguisher, index) => {
+          if (extinguisher.images && extinguisher.images.length > 0) {
+            optimizationTasks.push(
+              handleImageOptimization(extinguisher.images).then(images => ({ 
+                images, 
+                index, 
+                type: 'extinguisher'
+              }))
+            );
+          }
+        });
+        
+        // Process hydrant images
+        values.hydrants.forEach((hydrant, index) => {
+          if (hydrant.images && hydrant.images.length > 0) {
+            optimizationTasks.push(
+              handleImageOptimization(hydrant.images).then(images => ({ 
+                images, 
+                index, 
+                type: 'hydrant'
+              }))
+            );
+          }
+        });
+        
+        // Process hose reel images
+        values.hoseReels.forEach((hoseReel, index) => {
+          if (hoseReel.images && hoseReel.images.length > 0) {
+            optimizationTasks.push(
+              handleImageOptimization(hoseReel.images).then(images => ({ 
+                images, 
+                index, 
+                type: 'hoseReel'
+              }))
+            );
+          }
+        });
+        
+        // Process standalone image collections
+        const imageCollections: [keyof ActiveFireProtectionValues, CapturedImage[]][] = [
+          ['extinguisherImages', values.extinguisherImages],
+          ['hydrantImages', values.hydrantImages],
+          ['hoseReelImages', values.hoseReelImages],
+          ['autoSuppressionImages', values.autoSuppressionImages],
+          ['fireAlarmImages', values.fireAlarmImages],
+          ['gasSuppressionImages', values.gasSuppressionImages],
+          ['hvacImages', values.hvacImages]
+        ];
+        
+        // Add all image collections to the optimization tasks
+        imageCollections.forEach(([key, images]) => {
+          if (images && images.length > 0) {
+            optimizationTasks.push(
+              handleImageOptimization(images).then(optimizedImages => ({
+                images: optimizedImages,
+                type: key as string
+              }))
+            );
+          }
+        });
+        
+        console.log(`Optimizing ${optimizationTasks.length} image collections`);
+        
+        // Wait for all image optimizations to complete
+        const optimizationResults = await Promise.all(optimizationTasks);
+        
+        // Create a deep copy of the values to update
+        const updatedValues = JSON.parse(JSON.stringify(values)) as ActiveFireProtectionValues;
+        
+        // Process optimization results
+        optimizationResults.forEach(result => {
+          if (result.type === 'extinguisher' && typeof result.index === 'number') {
+            updatedValues.portableFireExtinguishers[result.index].images = result.images;
+          } else if (result.type === 'hydrant' && typeof result.index === 'number') {
+            updatedValues.hydrants[result.index].images = result.images;
+          } else if (result.type === 'hoseReel' && typeof result.index === 'number') {
+            updatedValues.hoseReels[result.index].images = result.images;
+          } else if (result.type) {
+            // Handle standalone image collections
+            updatedValues[result.type as keyof ActiveFireProtectionValues] = result.images as any;
+          }
+        });
+        
+        // Get existing assessment data
         const assessmentJson = localStorage.getItem('assessmentData');
         let assessmentData = assessmentJson ? JSON.parse(assessmentJson) : {};
         
-        // Store all data under a single key for active fire protection
-        assessmentData.activeFireProtection = values;
+        // Update the assessment data with optimized values
+        assessmentData.activeFireProtection = updatedValues;
         
+        // Save using chunked storage for better performance
+        saveChunkedAssessmentData(assessmentData);
+        
+        // Also save to original location for backward compatibility
         localStorage.setItem('assessmentData', JSON.stringify(assessmentData));
+        
+        // Update form values with optimized data
+        formik.setValues(updatedValues, false);
+        
+        console.log('Saved Active Fire Protection data successfully');
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
       } catch (err) {
         console.error('Failed to save Active Fire Protection section:', err);
         alert('Failed to save section.');
       } finally {
-        // Always reset the submitting state after completion (success or failure)
         setSubmitting(false);
+        setIsProcessing(false);
       }
     },
     validateOnChange: true,
@@ -358,9 +473,16 @@ const ActiveFireProtection: React.FC = () => {
             variant="contained" 
             color="primary"
             sx={{ minWidth: 200, fontWeight: 600, px: 4, py: 1 }}
-            disabled={formik.isSubmitting}
+            disabled={formik.isSubmitting || isProcessing}
           >
-            Save Section
+            {isProcessing ? (
+              <>
+                <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
+                Optimizing Images...
+              </>
+            ) : (
+              'Save Section'
+            )}
           </Button>
           {saved && (
             <Typography sx={{ ml: 2, color: 'green', alignSelf: 'center' }}>

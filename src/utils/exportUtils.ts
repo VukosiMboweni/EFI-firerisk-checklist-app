@@ -526,9 +526,9 @@ export const generateTextReport = (assessmentData: any, setupData: any): string 
       }
       
       // Fire Extinguishers
-      if (af.fireExtinguishers && af.fireExtinguishers.length > 0) {
+      if (af.portableFireExtinguishers && af.portableFireExtinguishers.length > 0) {
         addSection('Fire Extinguishers', 4);
-        af.fireExtinguishers.forEach((extinguisher: any, idx: number) => {
+        af.portableFireExtinguishers.forEach((extinguisher: any, idx: number) => {
           addSection(`Extinguisher ${idx + 1}`, 6);
           addObjectFields(extinguisher, '', 8);
         });
