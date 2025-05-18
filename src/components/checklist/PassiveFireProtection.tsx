@@ -74,19 +74,33 @@ const PassiveFireProtection: React.FC = () => {
 
   const formik = useFormik<PassiveFireProtectionValues>({
     initialValues,
-    onSubmit: (values) => {
+    onSubmit: async (values, { setSubmitting }) => {
       try {
+        // Create deep copies of image arrays to ensure React state updates properly
+        const deepCopyValues = {
+          ...values,
+          buildingImages: JSON.parse(JSON.stringify(values.buildingImages || [])),
+          fireDoorsWallsImages: JSON.parse(JSON.stringify(values.fireDoorsWallsImages || [])),
+          fireStopsImages: JSON.parse(JSON.stringify(values.fireStopsImages || [])),
+          transformerImages: JSON.parse(JSON.stringify(values.transformerImages || [])),
+          additionalImages: JSON.parse(JSON.stringify(values.additionalImages || []))
+        };
+        
         const assessmentJson = localStorage.getItem('assessmentData');
         let assessmentData = assessmentJson ? JSON.parse(assessmentJson) : {};
         
         // Store all data under a single key for passive fire protection
-        assessmentData.passiveFireProtection = values;
+        assessmentData.passiveFireProtection = deepCopyValues;
         
         localStorage.setItem('assessmentData', JSON.stringify(assessmentData));
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
       } catch (err) {
+        console.error('Failed to save section:', err);
         alert('Failed to save section.');
+      } finally {
+        // Ensure the form returns to a submittable state
+        setSubmitting(false);
       }
     },
   });
