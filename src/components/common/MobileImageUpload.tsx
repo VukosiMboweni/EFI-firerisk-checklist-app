@@ -10,7 +10,7 @@ import {
   DialogContent,
   DialogActions,
 } from '@mui/material';
-import { PhotoCamera, Delete, FileUpload } from '@mui/icons-material';
+import { PhotoCamera, Delete } from '@mui/icons-material';
 import { v4 as uuidv4 } from 'uuid';
 import { CapturedImage } from './ImageCapture';
 
@@ -140,41 +140,22 @@ const MobileImageUpload: React.FC<MobileImageUploadProps> = ({
       </Typography>
       
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-        {/* Camera input */}
+        {/* Single photo upload input */}
         <input
           accept="image/*"
-          capture="environment"
           type="file"
-          id={`camera-input-${sectionType}-${sectionId}`}
+          id={`photo-input-${sectionType}-${sectionId}`}
           ref={fileInputRef}
           style={{ display: 'none' }}
           onChange={handleFileUpload}
         />
-        <label htmlFor={`camera-input-${sectionType}-${sectionId}`}>
+        <label htmlFor={`photo-input-${sectionType}-${sectionId}`}>
           <Button
             variant="outlined"
             component="span"
             startIcon={<PhotoCamera />}
           >
-            Take Photo
-          </Button>
-        </label>
-        
-        {/* Gallery input */}
-        <input
-          accept="image/*"
-          type="file"
-          id={`gallery-input-${sectionType}-${sectionId}`}
-          style={{ display: 'none' }}
-          onChange={handleFileUpload}
-        />
-        <label htmlFor={`gallery-input-${sectionType}-${sectionId}`}>
-          <Button
-            variant="outlined"
-            component="span"
-            startIcon={<FileUpload />}
-          >
-            Upload Image
+            Photo
           </Button>
         </label>
       </Box>
