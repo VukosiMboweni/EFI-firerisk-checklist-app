@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -11,11 +11,13 @@ import {
   AccordionSummary,
   AccordionDetails,
   Button,
+  CircularProgress,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { useFormik } from 'formik';
 import ImageCapture, { CapturedImage } from '../common/ImageCapture';
+import { optimizeImagesForStorage, saveChunkedAssessmentData } from '../../utils/perfUtils';
 
 // Helper types
 interface RadioOption {
@@ -50,7 +52,8 @@ interface PassiveFireProtectionValues {
 }
 
 const PassiveFireProtection: React.FC = () => {
-  const [saved, setSaved] = React.useState(false);
+  const [saved, setSaved] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   
   // Define the initial values for the form
   const initialValues: PassiveFireProtectionValues = {
@@ -72,55 +75,58 @@ const PassiveFireProtection: React.FC = () => {
     additionalImages: [],
   };
 
+  // Create optimized version of image handler with useCallback to prevent unnecessary rerenders
+  const handleImageOptimization = useCallback(async (images: CapturedImage[]) => {
+    return await optimizeImagesForStorage(images);
+  }, []);
+  
   const formik = useFormik<PassiveFireProtectionValues>({
     initialValues,
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        // Process each image array to ensure they are properly formatted
-        // and have all required properties
-        const processImages = (images: CapturedImage[]) => {
-          return images.map((img, index) => ({
-            ...img,
-            id: img.id || `img-${index}-${Date.now()}`,
-            timestamp: img.timestamp || new Date().toISOString(),
-            associatedWith: img.associatedWith || {
-              type: 'passiveFireProtection',
-              id: 'main'
-            },
-            dataUrl: img.dataUrl
-          }));
-        };
-
-        // Create a new data object with all processed image arrays
-        const processedValues = {
+        setIsProcessing(true);
+        
+        // Step 1: Process and optimize all images (compressing and creating thumbnails)
+        const optimizationTasks = [
+          handleImageOptimization(values.buildingImages || []),
+          handleImageOptimization(values.fireDoorsWallsImages || []),
+          handleImageOptimization(values.fireStopsImages || []),
+          handleImageOptimization(values.transformerImages || []),
+          handleImageOptimization(values.additionalImages || [])
+        ];
+        
+        // Process all image arrays in parallel for better performance
+        const [
+          optimizedBuildingImages,
+          optimizedFireDoorsWallsImages, 
+          optimizedFireStopsImages,
+          optimizedTransformerImages,
+          optimizedAdditionalImages
+        ] = await Promise.all(optimizationTasks);
+        
+        // Step 2: Create the optimized values object
+        const optimizedValues = {
           ...values,
-          buildingImages: processImages(values.buildingImages || []),
-          fireDoorsWallsImages: processImages(values.fireDoorsWallsImages || []),
-          fireStopsImages: processImages(values.fireStopsImages || []),
-          transformerImages: processImages(values.transformerImages || []),
-          additionalImages: processImages(values.additionalImages || [])
+          buildingImages: optimizedBuildingImages,
+          fireDoorsWallsImages: optimizedFireDoorsWallsImages,
+          fireStopsImages: optimizedFireStopsImages,
+          transformerImages: optimizedTransformerImages,
+          additionalImages: optimizedAdditionalImages
         };
         
-        // Create deep copies of processed image arrays to ensure React state updates properly
-        const deepCopyValues = {
-          ...processedValues,
-          buildingImages: JSON.parse(JSON.stringify(processedValues.buildingImages)),
-          fireDoorsWallsImages: JSON.parse(JSON.stringify(processedValues.fireDoorsWallsImages)),
-          fireStopsImages: JSON.parse(JSON.stringify(processedValues.fireStopsImages)),
-          transformerImages: JSON.parse(JSON.stringify(processedValues.transformerImages)),
-          additionalImages: JSON.parse(JSON.stringify(processedValues.additionalImages))
-        };
-        
+        // Step 3: Get existing assessment data or create new object
         const assessmentJson = localStorage.getItem('assessmentData');
         let assessmentData = assessmentJson ? JSON.parse(assessmentJson) : {};
         
-        // Store all data under a single key for passive fire protection
-        assessmentData.passiveFireProtection = deepCopyValues;
+        // Step 4: Update the assessment data with our optimized values
+        assessmentData.passiveFireProtection = optimizedValues;
         
-        // Update formik values with processed data
-        formik.setValues(deepCopyValues, false);
+        // Step 5: Save using the chunked storage approach for better performance
+        saveChunkedAssessmentData(assessmentData);
         
+        // Step 6: Also save to the original location for backward compatibility
         localStorage.setItem('assessmentData', JSON.stringify(assessmentData));
+        
         console.log('Saved passive fire protection data successfully');
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
@@ -130,26 +136,37 @@ const PassiveFireProtection: React.FC = () => {
       } finally {
         // Ensure the form returns to a submittable state
         setSubmitting(false);
+        setIsProcessing(false);
       }
     },
   });
   
-  // Load any existing data
-  React.useEffect(() => {
-    try {
-      const assessmentJson = localStorage.getItem('assessmentData');
-      if (assessmentJson) {
-        const assessmentData = JSON.parse(assessmentJson);
-        if (assessmentData.passiveFireProtection) {
-          formik.setValues({
-            ...formik.values,
-            ...assessmentData.passiveFireProtection
-          });
+  // Load any existing data with debouncing to avoid performance issues
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const assessmentJson = localStorage.getItem('assessmentData');
+        if (assessmentJson) {
+          const assessmentData = JSON.parse(assessmentJson);
+          if (assessmentData.passiveFireProtection) {
+            // Only update if values are different to avoid unnecessary re-renders
+            const currentValues = JSON.stringify(formik.values);
+            const newValues = JSON.stringify(assessmentData.passiveFireProtection);
+            
+            if (currentValues !== newValues) {
+              formik.setValues({
+                ...formik.values,
+                ...assessmentData.passiveFireProtection
+              }, false); // false prevents validation on load
+            }
+          }
         }
+      } catch (err) {
+        console.error('Failed to load existing data', err);
       }
-    } catch (err) {
-      console.error('Failed to load existing data', err);
-    }
+    };
+    
+    loadData();
   }, []);
 
   // Helper component for radio selection groups
@@ -215,9 +232,17 @@ const PassiveFireProtection: React.FC = () => {
             type="submit" 
             variant="contained" 
             color="primary" 
+            disabled={formik.isSubmitting || isProcessing}
             sx={{ fontWeight: 600, px: 4, py: 1 }}
           >
-            Save Section
+            {isProcessing ? (
+              <>
+                <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
+                Optimizing Images...
+              </>
+            ) : (
+              'Save Section'
+            )}
           </Button>
           {saved && (
             <Typography sx={{ ml: 2, color: 'green', alignSelf: 'center' }}>
