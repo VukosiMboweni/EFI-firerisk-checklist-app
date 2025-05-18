@@ -27,7 +27,8 @@ import AddIcon from '@mui/icons-material/Add';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { Transformer } from '../../types/assessment';
-import ImageCapture, { CapturedImage } from '../common/ImageCapture';
+import MobileImageUpload from '../common/MobileImageUpload';
+import { CapturedImage } from '../common/ImageCapture';
 
 const validationSchema = Yup.object({
   transformers: Yup.array().of(
@@ -346,7 +347,7 @@ const TransformerRisk: React.FC = () => {
                         <Typography variant="subtitle2" gutterBottom>
                           Transformer Images:
                         </Typography>
-                        <ImageCapture 
+                        <MobileImageUpload 
                           sectionType="transformer" 
                           sectionId={transformer.id.toString()} 
                           onImageCapture={handleImageCapture}
