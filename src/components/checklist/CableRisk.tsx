@@ -59,14 +59,20 @@ const CableRisk: React.FC = () => {
       cableImages: [] as CapturedImage[],
     },
     validationSchema,
-    onSubmit: (values) => {
+    onSubmit: async (values) => {
       try {
+        // Ensure each cable has a valid ID
+        const validatedCables = values.cables.map((cable, index) => ({
+          ...cable,
+          id: cable.id || index + 1
+        }));
+        
         const assessmentJson = localStorage.getItem('assessmentData');
         let assessmentData = assessmentJson ? JSON.parse(assessmentJson) : {};
         
         // Save using the new structure with a cableRisk parent object
         assessmentData.cableRisk = {
-          cables: values.cables,
+          cables: validatedCables,
           comments: values.comments,
           cableImages: values.cableImages
         };
@@ -74,8 +80,15 @@ const CableRisk: React.FC = () => {
         localStorage.setItem('assessmentData', JSON.stringify(assessmentData));
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
+        
+        // Update form with validated data
+        formik.setFieldValue('cables', validatedCables);
       } catch (err) {
+        console.error('Failed to save section:', err);
         alert('Failed to save section.');
+      } finally {
+        // Ensure isSubmitting is reset to false after submission
+        formik.setSubmitting(false);
       }
     },
   });
@@ -88,17 +101,30 @@ const CableRisk: React.FC = () => {
         const assessmentData = JSON.parse(assessmentJson);
         if (assessmentData.cableRisk) {
           // Load using the new structure
+          // Ensure cables have proper IDs if they don't
+          const cables = assessmentData.cableRisk.cables || [];
+          const validatedCables = cables.map((cable: Cable, index: number) => ({
+            ...cable,
+            id: cable.id || index + 1
+          }));
+          
           formik.setValues({
-            cables: assessmentData.cableRisk.cables || [],
+            cables: validatedCables,
             comments: assessmentData.cableRisk.comments || '',
             cableImages: assessmentData.cableRisk.cableImages || []
           });
         } else if (assessmentData.cables) {
           // Handle legacy data format
+          const cables = assessmentData.cables || [];
+          const validatedCables = cables.map((cable: Cable, index: number) => ({
+            ...cable,
+            id: cable.id || index + 1
+          }));
+          
           formik.setValues({
-            ...formik.values,
-            cables: assessmentData.cables,
-            comments: assessmentData.comments || ''
+            cables: validatedCables,
+            comments: assessmentData.comments || '',
+            cableImages: []
           });
         }
       }
@@ -117,7 +143,8 @@ const CableRisk: React.FC = () => {
         id: 'general'
       };
     }
-    const updatedImages = [...formik.values.cableImages, newImage];
+    // Create a deep copy to ensure React detects the state change
+    const updatedImages = JSON.parse(JSON.stringify([...formik.values.cableImages, newImage]));
     formik.setFieldValue('cableImages', updatedImages);
   };
 
@@ -157,13 +184,33 @@ const CableRisk: React.FC = () => {
       damageNotes: '',
       images: [],
     };
-    formik.setFieldValue('cables', [...formik.values.cables, newCable]);
+    // Create a deep copy to ensure React detects the state change
+    const updatedCables = JSON.parse(JSON.stringify([...formik.values.cables, newCable]));
+    formik.setFieldValue('cables', updatedCables);
   };
 
   const handleRemoveCable = (index: number) => {
+    const removedCable = formik.values.cables[index];
     const updatedCables = [...formik.values.cables];
     updatedCables.splice(index, 1);
-    formik.setFieldValue('cables', updatedCables);
+    
+    // Also remove any images associated with this cable
+    if (removedCable && removedCable.id) {
+      const updatedImages = formik.values.cableImages.filter(
+        img => !(img.associatedWith && 
+               img.associatedWith.type === 'cable' && 
+               img.associatedWith.id === removedCable.id.toString())
+      );
+      formik.setFieldValue('cableImages', updatedImages);
+    }
+    
+    // Update cable IDs to be sequential after removal
+    const reindexedCables = updatedCables.map((cable, idx) => ({
+      ...cable,
+      id: idx + 1
+    }));
+    
+    formik.setFieldValue('cables', reindexedCables);
   };
 
   return (
