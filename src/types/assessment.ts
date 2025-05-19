@@ -37,9 +37,6 @@ export interface AssessmentData {
   
   // Earthing & Lightning
   earthingAndLightning?: EarthingAndLightning;
-  
-  // Arc Protection
-  arcProtection?: ArcProtection;
 }
 
 export interface AssessmentSetup {
@@ -314,13 +311,7 @@ export interface EarthingAndLightning {
   images?: CapturedImage[];
 }
 
-export interface ArcProtection {
-  systemPresent: boolean;
-  type: string;
-  operationalStatus: 'OK' | 'Fault' | 'Untested';
-  comments: string;
-  images?: CapturedImage[];
-}
+
 
 export interface ImageReference {
   id: number;

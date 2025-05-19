@@ -28,7 +28,6 @@ import {
   ElectricBolt as ElectricBoltIcon,
   Cable as CableIcon,
   GpsFixed as GpsFixedIcon,
-  FlashOn as FlashOnIcon,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import PassiveFireProtection from '../components/checklist/PassiveFireProtection';
@@ -37,7 +36,6 @@ import TransformerRisk from '../components/checklist/TransformerRisk';
 import CircuitBreakerRisk from '../components/checklist/CircuitBreakerRisk';
 import CableRisk from '../components/checklist/CableRisk';
 import EarthingAndLightning from '../components/checklist/EarthingAndLightning';
-import ArcProtection from '../components/checklist/ArcProtection';
 
 const drawerWidth = 240;
 
@@ -139,12 +137,7 @@ const Checklist: React.FC = () => {
       icon: <GpsFixedIcon />,
       component: <EarthingAndLightning />,
     },
-    {
-      id: 'arc-protection',
-      title: 'Arc Protection',
-      icon: <FlashOnIcon />,
-      component: <ArcProtection />,
-    },
+
   ];
 
   const handleSectionChange = (sectionId: string) => {
