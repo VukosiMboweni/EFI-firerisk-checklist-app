@@ -15,6 +15,7 @@ import {
   AccordionDetails,
   Container,
   Alert,
+  AlertTitle,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -52,15 +53,27 @@ const Review: React.FC = () => {
       const assessmentJson = localStorage.getItem('assessmentData');
       
       if (setupJson) {
-        setSetupData(JSON.parse(setupJson));
+        const parsedSetupData = JSON.parse(setupJson);
+        setSetupData(parsedSetupData);
+        
+        // If the premises is marked as unsafe, we don't require assessment data
+        if (parsedSetupData.isSafeToEnter === false) {
+          // If no assessment data exists, create an empty object for rendering purposes
+          if (!assessmentJson) {
+            setAssessmentData({});
+          } else {
+            setAssessmentData(JSON.parse(assessmentJson));
+          }
+        } else {
+          // Normal flow for safe premises - assessment data is required
+          if (assessmentJson) {
+            setAssessmentData(JSON.parse(assessmentJson));
+          } else {
+            setError('No assessment data found. Please complete the checklist first.');
+          }
+        }
       } else {
         setError('No assessment setup data found. Please complete the setup first.');
-      }
-      
-      if (assessmentJson) {
-        setAssessmentData(JSON.parse(assessmentJson));
-      } else {
-        setError('No assessment data found. Please complete the checklist first.');
       }
     } catch (err) {
       setError('Error loading assessment data. Please try again.');
@@ -172,6 +185,15 @@ const Review: React.FC = () => {
         <Typography variant="h3" align="center" gutterBottom sx={{ mb: 4, fontWeight: 700 }}>
           Fire Risk Assessment Document
         </Typography>
+        
+        {setupData && !setupData.isSafeToEnter && (
+          <Alert severity="error" sx={{ mb: 4 }}>
+            <AlertTitle sx={{ fontWeight: 'bold' }}>PREMISES DEEMED UNSAFE FOR ENTRY</AlertTitle>
+            This assessment could not be completed as the premises was determined to be unsafe for entry. 
+            Only the setup and safety information is provided in this report.
+          </Alert>
+        )}
+        
         <Divider sx={{ mb: 4 }} />
         
         {/* Assessment Setup */}
