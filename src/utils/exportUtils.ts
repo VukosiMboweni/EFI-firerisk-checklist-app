@@ -488,6 +488,17 @@ export const generateTextReport = (assessmentData: any, setupData: any): string 
     addField('Region', setupData.region, 2);
     addField('CoT Representative', setupData.cotRepresentative, 2);
     addField('Assessment Date', formatDate(setupData.assessmentDate), 2);
+    
+    // Safety Assessment
+    addSection('1.1 Safety Assessment', 2);
+    addField('Is Premises Safe for Entry', setupData.isSafeToEnter, 4);
+    
+    // Only include reason if premises is deemed unsafe
+    if (setupData.isSafeToEnter === false && setupData.safetyDeclineReason) {
+      textReport += '    IMPORTANT: PREMISES DEEMED UNSAFE FOR ENTRY\n';
+      addField('Reason for Declining Entry', setupData.safetyDeclineReason, 4);
+      textReport += '    NOTE: Assessment could not be completed due to safety concerns.\n';
+    }
   }
   
   // Assessment Results

@@ -364,6 +364,52 @@ export const generateProfessionalPDF = (assessmentData: any, setupData: Assessme
         if (setupData.cotRepresentative) {
           addField('CoT Representative', setupData.cotRepresentative);
         }
+        
+        // Safety Assessment
+        addHeading('1.1 Safety Assessment', 2);
+        
+        // Add safety status with color highlighting based on value
+        pdf.setFontSize(fontSizes.normal);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Is Premises Safe for Entry:', margin, currentY);
+        
+        const labelWidth = pdf.getTextWidth('Is Premises Safe for Entry: ');
+        const valueX = margin + labelWidth + 2;
+        
+        // Set color based on safety status
+        if (setupData.isSafeToEnter === false) {
+          pdf.setTextColor(255, 0, 0); // Red for unsafe
+        } else {
+          pdf.setTextColor(0, 128, 0); // Green for safe
+        }
+        
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(setupData.isSafeToEnter ? 'Yes' : 'No', valueX, currentY);
+        currentY += fontSizes.normal * 0.352778 * 1.5;
+        
+        // Add reason if premises is unsafe
+        if (setupData.isSafeToEnter === false && setupData.safetyDeclineReason) {
+          // Add warning box
+          pdf.setDrawColor(255, 0, 0);
+          pdf.setFillColor(255, 240, 240);
+          pdf.roundedRect(margin, currentY, contentWidth, 30, 2, 2, 'FD');
+          
+          currentY += 8;
+          pdf.setFont('helvetica', 'bold');
+          pdf.setTextColor(255, 0, 0);
+          pdf.setFontSize(fontSizes.normal + 2);
+          pdf.text('PREMISES DEEMED UNSAFE FOR ENTRY', margin + 5, currentY);
+          currentY += fontSizes.normal * 0.352778 * 1.8;
+          
+          pdf.setFont('helvetica', 'normal');
+          pdf.setTextColor(0, 0, 0);
+          pdf.setFontSize(fontSizes.normal);
+          addText(`Reason: ${setupData.safetyDeclineReason}`, margin + 5, fontSizes.normal);
+          currentY += 5;
+          
+          addText('Note: Assessment could not be completed due to safety concerns.', margin + 5, fontSizes.normal, 'italic');
+          currentY += 5;
+        }
       } else {
         addText('No assessment setup data available.', margin, fontSizes.normal, 'italic');
       }
