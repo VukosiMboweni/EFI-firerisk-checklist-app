@@ -36,7 +36,8 @@ const validationSchema = Yup.object({
       id: Yup.number(),
       serialNumber: Yup.string().required('Required'),
       age: Yup.number().min(0).required('Required'),
-      lastRefurbishmentDate: Yup.string(), // Made optional
+      lastMaintenanceDate: Yup.string(), // Optional
+      nextMaintenanceDate: Yup.string(), // Optional
       fanConditions: Yup.string().oneOf(['Good', 'Fair', 'Poor', 'NA']).required('Required'),
       hasOilLeaks: Yup.boolean(),
       oilLeakDetails: Yup.string().when('hasOilLeaks', {
@@ -111,7 +112,8 @@ const TransformerRisk: React.FC = () => {
       id: Date.now(), // Use timestamp for unique ID
       serialNumber: '',
       age: 0,
-      lastRefurbishmentDate: '',
+      lastMaintenanceDate: '',
+      nextMaintenanceDate: '',
       fanConditions: 'NA',
       hasOilLeaks: false,
       oilLeakDetails: '',
@@ -266,19 +268,41 @@ const TransformerRisk: React.FC = () => {
                         <TextField
                           fullWidth
                           type="date"
-                          name={`transformers.${index}.lastRefurbishmentDate`}
-                          label="Last Refurbishment Date"
-                          value={transformer.lastRefurbishmentDate}
+                          name={`transformers.${index}.lastMaintenanceDate`}
+                          label="Last Maintenance Date"
+                          value={transformer.lastMaintenanceDate || ''}
                           onChange={formik.handleChange}
                           error={
-                            formik.touched.transformers?.[index]?.lastRefurbishmentDate &&
+                            formik.touched.transformers?.[index]?.lastMaintenanceDate &&
                             typeof formik.errors.transformers?.[index] === 'object' &&
-                            Boolean((formik.errors.transformers?.[index] as any)?.lastRefurbishmentDate)
+                            Boolean((formik.errors.transformers?.[index] as any)?.lastMaintenanceDate)
                           }
                           helperText={
-                            formik.touched.transformers?.[index]?.lastRefurbishmentDate &&
+                            formik.touched.transformers?.[index]?.lastMaintenanceDate &&
                             typeof formik.errors.transformers?.[index] === 'object'
-                              ? (formik.errors.transformers?.[index] as any)?.lastRefurbishmentDate
+                              ? (formik.errors.transformers?.[index] as any)?.lastMaintenanceDate
+                              : ''
+                          }
+                          InputLabelProps={{ shrink: true }}
+                        />
+                      </MuiGrid>
+                      <MuiGrid item xs={12} md={6}>
+                        <TextField
+                          fullWidth
+                          type="date"
+                          name={`transformers.${index}.nextMaintenanceDate`}
+                          label="Next Maintenance Date"
+                          value={transformer.nextMaintenanceDate || ''}
+                          onChange={formik.handleChange}
+                          error={
+                            formik.touched.transformers?.[index]?.nextMaintenanceDate &&
+                            typeof formik.errors.transformers?.[index] === 'object' &&
+                            Boolean((formik.errors.transformers?.[index] as any)?.nextMaintenanceDate)
+                          }
+                          helperText={
+                            formik.touched.transformers?.[index]?.nextMaintenanceDate &&
+                            typeof formik.errors.transformers?.[index] === 'object'
+                              ? (formik.errors.transformers?.[index] as any)?.nextMaintenanceDate
                               : ''
                           }
                           InputLabelProps={{ shrink: true }}

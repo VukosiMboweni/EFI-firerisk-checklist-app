@@ -273,7 +273,8 @@ export interface Transformer {
   id: number;
   serialNumber: string;
   age: number;
-  lastRefurbishmentDate?: string;
+  lastMaintenanceDate?: string;
+  nextMaintenanceDate?: string;
   fanConditions: 'Good' | 'Fair' | 'Poor' | 'NA';
   hasOilLeaks: boolean;
   oilLeakDetails: string;
@@ -285,8 +286,8 @@ export interface CircuitBreaker {
   serialNumber: string;
   type: string;
   age: number;
-  lastMaintenanceDate: string;
-  nextMaintenanceDate: string;
+  lastMaintenanceDate?: string;
+  nextMaintenanceDate?: string;
   condition: string;
   comments: string;
   images?: CapturedImage[];

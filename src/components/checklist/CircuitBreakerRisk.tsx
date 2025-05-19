@@ -30,8 +30,8 @@ const validationSchema = Yup.object({
       serialNumber: Yup.string().required('Required'),
       type: Yup.string().oneOf(['Air', 'Oil', 'SF6', 'Vacuum', 'Other']).required('Required'),
       age: Yup.number().min(0).required('Required'),
-      lastMaintenanceDate: Yup.string().required('Required'),
-      nextMaintenanceDate: Yup.string().required('Required'),
+      lastMaintenanceDate: Yup.string(), // Made optional
+      nextMaintenanceDate: Yup.string(), // Made optional
       condition: Yup.string().oneOf(['Good', 'Fair', 'Poor', 'Critical']).required('Required'),
       comments: Yup.string(),
     })
