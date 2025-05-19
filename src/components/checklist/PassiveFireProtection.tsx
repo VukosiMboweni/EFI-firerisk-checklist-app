@@ -36,6 +36,7 @@ interface RadioSelectionProps {
 interface PassiveFireProtectionValues {
   buildingCondition: string;
   fireRating: number;
+  buildingStructureComments: string;
   buildingImages: CapturedImage[];
   fireDoorsPresent: string;
   fireDoorsCondition: string;
@@ -43,13 +44,16 @@ interface PassiveFireProtectionValues {
   fireWallsPresent: string;
   fireWallsCondition: string;
   fireWallsRating: number;
+  fireDoorsWallsComments: string;
   fireDoorsWallsImages: CapturedImage[];
   fireStopsPresent: string;
   fireStopsCondition: string;
   fireStopsRating: number;
+  fireStopsComments: string;
   fireStopsImages: CapturedImage[];
   transformerBundingPresent: string;
   transformerBundingCondition: string;
+  transformerProtectionComments: string;
   transformerImages: CapturedImage[];
   comments: string;
   additionalImages: CapturedImage[];
@@ -63,6 +67,7 @@ const PassiveFireProtection: React.FC = () => {
   const initialValues: PassiveFireProtectionValues = {
     buildingCondition: 'Good',
     fireRating: 60,
+    buildingStructureComments: '',
     buildingImages: [],
     fireDoorsPresent: 'Yes',
     fireDoorsCondition: 'Good',
@@ -70,13 +75,16 @@ const PassiveFireProtection: React.FC = () => {
     fireWallsPresent: 'Yes',
     fireWallsCondition: 'Good',
     fireWallsRating: 60,
+    fireDoorsWallsComments: '',
     fireDoorsWallsImages: [],
     fireStopsPresent: 'Yes',
     fireStopsCondition: 'Good',
     fireStopsRating: 60,
+    fireStopsComments: '',
     fireStopsImages: [],
     transformerBundingPresent: 'Yes',
     transformerBundingCondition: 'Good',
+    transformerProtectionComments: '',
     transformerImages: [],
     comments: '',
     additionalImages: [],
@@ -285,7 +293,23 @@ const PassiveFireProtection: React.FC = () => {
                 />
               </MuiGrid>
             </MuiGrid>
-            <MuiGrid container spacing={3}>
+            
+            <MuiGrid container spacing={3} sx={{ mt: 2 }}>
+              <MuiGrid item xs={12}>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={3}
+                  name="buildingStructureComments"
+                  label="Building Structure Comments"
+                  placeholder="Add any specific comments about the building structure"
+                  value={formik.values.buildingStructureComments}
+                  onChange={formik.handleChange}
+                />
+              </MuiGrid>
+            </MuiGrid>
+            
+            <MuiGrid container spacing={3} sx={{ mt: 2 }}>
               <MuiGrid item xs={12}>
                 <MobileImageUpload
                   sectionType="buildingStructure"
@@ -373,7 +397,23 @@ const PassiveFireProtection: React.FC = () => {
                 />
               </MuiGrid>
             </MuiGrid>
-            <MuiGrid container spacing={3}>
+            
+            <MuiGrid container spacing={3} sx={{ mt: 2 }}>
+              <MuiGrid item xs={12}>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={3}
+                  name="fireDoorsWallsComments"
+                  label="Fire Doors & Walls Comments"
+                  placeholder="Add any specific comments about fire doors and walls"
+                  value={formik.values.fireDoorsWallsComments}
+                  onChange={formik.handleChange}
+                />
+              </MuiGrid>
+            </MuiGrid>
+            
+            <MuiGrid container spacing={3} sx={{ mt: 2 }}>
               <MuiGrid item xs={12}>
                 <MobileImageUpload
                   sectionType="fireDoorsWalls"
@@ -431,7 +471,23 @@ const PassiveFireProtection: React.FC = () => {
                 />
               </MuiGrid>
             </MuiGrid>
-            <MuiGrid container spacing={3}>
+            
+            <MuiGrid container spacing={3} sx={{ mt: 2 }}>
+              <MuiGrid item xs={12}>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={3}
+                  name="fireStopsComments"
+                  label="Fire Stops Comments"
+                  placeholder="Add any specific comments about fire stops"
+                  value={formik.values.fireStopsComments}
+                  onChange={formik.handleChange}
+                />
+              </MuiGrid>
+            </MuiGrid>
+            
+            <MuiGrid container spacing={3} sx={{ mt: 2 }}>
               <MuiGrid item xs={12}>
                 <MobileImageUpload
                   sectionType="fireStops"
@@ -477,7 +533,23 @@ const PassiveFireProtection: React.FC = () => {
                 />
               </MuiGrid>
             </MuiGrid>
-            <MuiGrid container spacing={3}>
+            
+            <MuiGrid container spacing={3} sx={{ mt: 2 }}>
+              <MuiGrid item xs={12}>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={3}
+                  name="transformerProtectionComments"
+                  label="Transformer Protection Comments"
+                  placeholder="Add any specific comments about transformer protection"
+                  value={formik.values.transformerProtectionComments}
+                  onChange={formik.handleChange}
+                />
+              </MuiGrid>
+            </MuiGrid>
+            
+            <MuiGrid container spacing={3} sx={{ mt: 2 }}>
               <MuiGrid item xs={12}>
                 <MobileImageUpload
                   sectionType="transformerProtection"
