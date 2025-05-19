@@ -308,10 +308,8 @@ export interface Cable {
 }
 
 export interface EarthingAndLightning {
-  earthingStrapsCondition: 'Good' | 'Corroded' | 'Loose' | 'Missing';
-  lastEarthTestDate: string;
-  earthResistance: number;
-  lightningMastsCondition: 'Good' | 'Damaged' | 'Corroded';
+  earthingStrapsCondition: 'Good' | 'Corroded' | 'Loose' | 'Missing' | 'Not Present';
+  lightningMastsCondition: 'Good' | 'Damaged' | 'Corroded' | 'Not Present';
   comments: string;
   images?: CapturedImage[];
 }

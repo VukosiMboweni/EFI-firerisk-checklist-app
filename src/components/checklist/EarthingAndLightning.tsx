@@ -22,14 +22,10 @@ import { CapturedImage } from '../common/ImageCapture';
 
 const validationSchema = Yup.object({
   earthingStrapsCondition: Yup.string()
-    .oneOf(['Good', 'Corroded', 'Loose', 'Missing'])
+    .oneOf(['Good', 'Corroded', 'Loose', 'Missing', 'Not Present'])
     .required('Earthing straps condition is required'),
-  lastEarthTestDate: Yup.string().required('Last earth test date is required'),
-  earthResistance: Yup.number()
-    .min(0, 'Earth resistance must be a positive number')
-    .required('Earth resistance is required'),
   lightningMastsCondition: Yup.string()
-    .oneOf(['Good', 'Damaged', 'Corroded'])
+    .oneOf(['Good', 'Damaged', 'Corroded', 'Not Present'])
     .required('Lightning masts condition is required'),
   comments: Yup.string(),
   images: Yup.array(),
@@ -40,8 +36,6 @@ const EarthingAndLightningComponent: React.FC = () => {
   const formik = useFormik({
     initialValues: {
       earthingStrapsCondition: 'Good',
-      lastEarthTestDate: '',
-      earthResistance: 0,
       lightningMastsCondition: 'Good',
       comments: '',
       images: [] as CapturedImage[],
@@ -90,8 +84,6 @@ const EarthingAndLightningComponent: React.FC = () => {
           const data = assessmentData.earthingAndLightning;
           formik.setValues({
             earthingStrapsCondition: data.earthingStrapsCondition || 'Good',
-            lastEarthTestDate: data.lastEarthTestDate || '',
-            earthResistance: data.earthResistance || 0,
             lightningMastsCondition: data.lightningMastsCondition || 'Good',
             comments: data.comments || '',
             images: data.images || [],
@@ -143,6 +135,7 @@ const EarthingAndLightningComponent: React.FC = () => {
                     <MenuItem value="Corroded">Corroded</MenuItem>
                     <MenuItem value="Loose">Loose</MenuItem>
                     <MenuItem value="Missing">Missing</MenuItem>
+                    <MenuItem value="Not Present">Not Present</MenuItem>
                   </Select>
                   {formik.touched.earthingStrapsCondition && formik.errors.earthingStrapsCondition && (
                     <Typography color="error" variant="caption">
@@ -151,31 +144,7 @@ const EarthingAndLightningComponent: React.FC = () => {
                   )}
                 </FormControl>
               </MuiGrid>
-              <MuiGrid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  type="date"
-                  name="lastEarthTestDate"
-                  label="Last Earth Test Date"
-                  value={formik.values.lastEarthTestDate}
-                  onChange={formik.handleChange}
-                  error={formik.touched.lastEarthTestDate && Boolean(formik.errors.lastEarthTestDate)}
-                  helperText={formik.touched.lastEarthTestDate && formik.errors.lastEarthTestDate}
-                  InputLabelProps={{ shrink: true }}
-                />
-              </MuiGrid>
-              <MuiGrid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  name="earthResistance"
-                  label="Earth Resistance (ohms)"
-                  value={formik.values.earthResistance}
-                  onChange={formik.handleChange}
-                  error={formik.touched.earthResistance && Boolean(formik.errors.earthResistance)}
-                  helperText={formik.touched.earthResistance && formik.errors.earthResistance}
-                />
-              </MuiGrid>
+
               <MuiGrid item xs={12} md={6}>
                 <FormControl fullWidth>
                   <InputLabel>Lightning Masts Condition</InputLabel>
@@ -192,6 +161,7 @@ const EarthingAndLightningComponent: React.FC = () => {
                     <MenuItem value="Good">Good</MenuItem>
                     <MenuItem value="Damaged">Damaged</MenuItem>
                     <MenuItem value="Corroded">Corroded</MenuItem>
+                    <MenuItem value="Not Present">Not Present</MenuItem>
                   </Select>
                   {formik.touched.lightningMastsCondition && formik.errors.lightningMastsCondition && (
                     <Typography color="error" variant="caption">
