@@ -124,19 +124,49 @@ export const generateProfessionalPDF = (assessmentData: any, setupData: Assessme
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor(0, 0, 0);
       
-      // Calculate where the value should start
-      const labelWidth = pdf.getTextWidth(`${label}: `);
-      const valueX = Math.min(margin + indent + labelWidth + 2, margin + 60); // Cap at 60mm indent
+      // Handle different ways based on content length
+      const isLongText = displayValue.length > 40 || displayValue.includes('\n');
+      const isComment = label.toLowerCase().includes('comment') || label.toLowerCase().includes('note');
       
-      // If value would start too far to the right, move it to the next line
-      if (valueX > pageWidth - margin - 40) {
-        currentY += fontSizes.normal * 0.352778 * 1.2;
-        pdf.text(displayValue, margin + indent + 5, currentY);
+      if (isLongText || isComment) {
+        // For comments or long text, use a different approach with proper text wrapping
+        currentY += fontSizes.normal * 0.352778 * 1.2; // Move to next line
+        
+        // Calculate available width for the text
+        const availableWidth = contentWidth - indent - 5;
+        
+        // Split text to fit the available width
+        const textLines = pdf.splitTextToSize(displayValue, availableWidth);
+        
+        // Check if we need a new page based on the number of lines
+        if (currentY + (textLines.length * fontSizes.normal * 0.352778 * 1.2) > pageHeight - margin) {
+          addNewPage();
+        }
+        
+        // Render the text with proper line breaks
+        pdf.text(textLines, margin + indent + 5, currentY);
+        
+        // Update Y position based on the number of lines
+        currentY += textLines.length * fontSizes.normal * 0.352778 * 1.2;
       } else {
-        pdf.text(displayValue, valueX, currentY);
+        // For shorter values, use the inline approach
+        // Calculate where the value should start
+        const labelWidth = pdf.getTextWidth(`${label}: `);
+        const valueX = Math.min(margin + indent + labelWidth + 2, margin + 60); // Cap at 60mm indent
+        
+        // If value would start too far to the right, move it to the next line
+        if (valueX > pageWidth - margin - 40) {
+          currentY += fontSizes.normal * 0.352778 * 1.2;
+          pdf.text(displayValue, margin + indent + 5, currentY);
+        } else {
+          pdf.text(displayValue, valueX, currentY);
+        }
+        
+        currentY += fontSizes.normal * 0.352778 * 1.2; // Move to next line with spacing
       }
       
-      currentY += fontSizes.normal * 0.352778 * 1.5; // Move to next line with spacing
+      // Add some extra spacing after the field
+      currentY += fontSizes.normal * 0.352778 * 0.3;
     };
     
     // Function to add a section divider

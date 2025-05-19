@@ -406,7 +406,41 @@ export const generateTextReport = (assessmentData: any, setupData: any): string 
     const formattedValue = typeof value === 'boolean' 
       ? (value ? 'Yes' : 'No') 
       : (value === '' ? '[Not specified]' : value.toString());
-    textReport += indentation + label + ': ' + formattedValue + '\n';
+    
+    // Special handling for comments or long text fields
+    const isLongText = formattedValue.length > 60 || formattedValue.includes('\n');
+    const isComment = label.toLowerCase().includes('comment') || label.toLowerCase().includes('note');
+    
+    if (isLongText || isComment) {
+      // For comments or multi-line content, add a line break after the label
+      textReport += indentation + label + ':\n';
+      
+      // Add the text with additional indentation
+      const contentIndentation = ' '.repeat(indent + 2);
+      
+      // Split by newlines and add each line with proper indentation
+      const lines = formattedValue.split('\n');
+      lines.forEach((line: string) => {
+        // Further split long lines to avoid truncation
+        if (line.length > 80) {
+          const wrappedLines = [];
+          for (let i = 0; i < line.length; i += 80) {
+            wrappedLines.push(line.substring(i, i + 80));
+          }
+          wrappedLines.forEach(wrappedLine => {
+            textReport += contentIndentation + wrappedLine + '\n';
+          });
+        } else {
+          textReport += contentIndentation + line + '\n';
+        }
+      });
+      
+      // Add an extra empty line after long content for readability
+      textReport += '\n';
+    } else {
+      // For shorter fields, use the standard format
+      textReport += indentation + label + ': ' + formattedValue + '\n';
+    }
   };
   
   // Helper function to format a date string
