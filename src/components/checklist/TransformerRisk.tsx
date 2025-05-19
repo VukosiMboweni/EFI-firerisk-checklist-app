@@ -36,7 +36,7 @@ const validationSchema = Yup.object({
       id: Yup.number(),
       serialNumber: Yup.string().required('Required'),
       age: Yup.number().min(0).required('Required'),
-      lastRefurbishmentDate: Yup.string().required('Required'),
+      lastRefurbishmentDate: Yup.string(), // Made optional
       fanConditions: Yup.string().oneOf(['Good', 'Fair', 'Poor', 'NA']).required('Required'),
       hasOilLeaks: Yup.boolean(),
       oilLeakDetails: Yup.string().when('hasOilLeaks', {
@@ -44,14 +44,17 @@ const validationSchema = Yup.object({
         then: (schema) => schema.required('Oil leak details are required when leaks are present'),
         otherwise: (schema) => schema,
       }),
+      comments: Yup.string(), // Added comments field
     })
   ),
+  comments: Yup.string(), // Overall comments field
 });
 
 // Interface for the form values
 interface TransformerRiskValues {
   transformers: Transformer[];
   transformerImages: CapturedImage[];
+  comments: string; // Overall comments field
 }
 
 const TransformerRisk: React.FC = () => {
@@ -61,6 +64,7 @@ const TransformerRisk: React.FC = () => {
   const initialValues: TransformerRiskValues = {
     transformers: [],
     transformerImages: [],
+    comments: '', // Initialize overall comments as empty string
   };
 
   const formik = useFormik<TransformerRiskValues>({
@@ -111,6 +115,7 @@ const TransformerRisk: React.FC = () => {
       fanConditions: 'NA',
       hasOilLeaks: false,
       oilLeakDetails: '',
+      comments: '', // Initialize comments as empty string
     };
     formik.setFieldValue('transformers', [...formik.values.transformers, newTransformer]);
   };
@@ -344,6 +349,18 @@ const TransformerRisk: React.FC = () => {
                         </MuiGrid>
                       )}
                       <MuiGrid item xs={12}>
+                        <TextField
+                          fullWidth
+                          multiline
+                          rows={3}
+                          name={`transformers.${index}.comments`}
+                          label="Transformer Comments"
+                          placeholder="Add any comments about this transformer"
+                          value={transformer.comments || ''}
+                          onChange={formik.handleChange}
+                        />
+                      </MuiGrid>
+                      <MuiGrid item xs={12}>
                         <Typography variant="subtitle2" gutterBottom>
                           Transformer Images:
                         </Typography>
@@ -359,6 +376,29 @@ const TransformerRisk: React.FC = () => {
                   </Box>
                 </MuiGrid>
               ))}
+            </MuiGrid>
+          </AccordionDetails>
+        </Accordion>
+        
+        {/* Add an overall comments section */}
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6">Overall Comments</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <MuiGrid container spacing={3}>
+              <MuiGrid item xs={12}>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={4}
+                  name="comments"
+                  label="Overall Transformer Risk Comments"
+                  placeholder="Add any overall comments about transformer risk assessment"
+                  value={formik.values.comments}
+                  onChange={formik.handleChange}
+                />
+              </MuiGrid>
             </MuiGrid>
           </AccordionDetails>
         </Accordion>

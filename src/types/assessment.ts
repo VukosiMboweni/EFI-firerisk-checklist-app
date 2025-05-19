@@ -276,10 +276,11 @@ export interface Transformer {
   id: number;
   serialNumber: string;
   age: number;
-  lastRefurbishmentDate: string;
+  lastRefurbishmentDate?: string;
   fanConditions: 'Good' | 'Fair' | 'Poor' | 'NA';
   hasOilLeaks: boolean;
   oilLeakDetails: string;
+  comments?: string;
 }
 
 export interface CircuitBreaker {
