@@ -200,6 +200,30 @@ const Review: React.FC = () => {
                   <Typography variant="body1" gutterBottom>{setupData.cotRepresentative}</Typography>
                 </Grid>
               )}
+              
+              <Grid item xs={12}>
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="h6" gutterBottom>Safety Assessment</Typography>
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle1">Is premises safe for entry?</Typography>
+                <Typography variant="body1" gutterBottom sx={{
+                  fontWeight: 'bold',
+                  color: setupData.isSafeToEnter ? 'green' : 'red'
+                }}>
+                  {formatYesNo(setupData.isSafeToEnter)}
+                </Typography>
+              </Grid>
+              
+              {!setupData.isSafeToEnter && setupData.safetyDeclineReason && (
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1">Reason for declining entry</Typography>
+                  <Paper elevation={1} sx={{ p: 2, backgroundColor: '#ffebee', mb: 2 }}>
+                    <Typography variant="body1">{setupData.safetyDeclineReason}</Typography>
+                  </Paper>
+                </Grid>
+              )}
               <Grid item xs={12} md={6}>
                 <Typography variant="subtitle1">Assessment Date</Typography>
                 <Typography variant="body1" gutterBottom>{new Date(setupData.assessmentDate).toLocaleDateString()}</Typography>

@@ -45,10 +45,13 @@ export interface AssessmentData {
 export interface AssessmentSetup {
   efiRepresentative: string;
   substationName: string;
-
   region: string;
   cotRepresentative?: string;
   assessmentDate: string;
+  
+  // Safety assessment
+  isSafeToEnter: boolean;
+  safetyDeclineReason?: string;
 }
 
 export interface StructuralIntegrity {
